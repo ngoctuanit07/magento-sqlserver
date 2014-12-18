@@ -35,7 +35,6 @@ class Salore_ErpConnect_Model_Observer
 				$product = Mage::getModel('catalog/product')->load($product_id);
 				$taxClassId = $product->getTaxClassId();
 				$taxClassName = Mage::getModel('tax/class')->load($taxClassId);
-				var_dump($taxClassName); die();
 				$taxClassName = Mage::getModel('tax/class')->load($taxClassId)->getClassName();
 				if(isset($order_id) && $order_id)
 				{
@@ -80,70 +79,4 @@ class Salore_ErpConnect_Model_Observer
 		
      	
 	}
-	public function salesorder($observer)
-	{
-		$order = $observer->getEvent()->getOrder()->getData();
-		//var_dump($order); die();
-		//$order_id = $order->getEntityId();
-		$db = Mage::helper('sberpconnect')->getConnection();
-		$bind = array();
-		$salesOrderHeader = 'tblSalesOrderHeader';
-		
-		if(isset($order['entity_id'])  && $order['entity_id'])
-		{
-			$where = 'MagSalesOrderNo ='.$order['increment_id'];
-			//var_dump($order->getIncrementId()); die();
-			/* $orderComments = $order->getAllStatusHistory();
-			foreach ( $orderComments as $comment)
-			{
-				$bind['Comment'] = $comment->getData('comment');
-			} */
-			//var_dump(  $order->getAllStatusHistory()); die();
-			$bind['OrderStatus'] = substr($order['status'] ,0 , 1);
-			$bind['FreightAmt'] = $order['shipping_amount'];
-			$bind['TaxableAmt'] = $order['grand_total'];
-		}
-		else 
-		{
-			return  false;
-		}
-		try {
-			$db->update($salesOrderHeader , $bind , $where);
-			//$db->insert($salesOrderDetail , $detail);
-			//$db->insert($salesOrderAdjustments , $adjustment);
-			//$db->insert($shippeditem , $shippitem);
-			//$db->insert($shippingtracking , $shipingitem);
-				
-		} catch (Exception $e) {
-			Mage::getSingleton('core/session')->addError($e->getMessage());
-		}
-	}
-	public function loadcommentorder($observer)
-	{
-		$order = $observer->getEvent();
-		//$order = $observer->getEvent()->getStatusHistory();
-		$comment = $order->getComment();
-		$db = Mage::helper('sberpconnect')->getConnection();
-		$bind = array();
-		$salesOrderHeader = 'tblSalesOrderHeader';
-		if(isset($comment) && $comment)
-		{
-			$bind['Comment'] = $comment;
-			try {
-				$db->insert($salesOrderHeader , $bind);
-			} catch (Exception $e) {
-				Mage::getSingleton('core/session')->addError($e->getMessage());
-			}
-		}
-		else 
-		{
-			
-		}
-		
-		
-	}
-	/* public function initFrontController($observer)
-	{
-		die('187');
-	} */
 }

@@ -16,35 +16,6 @@
                     </sberpconnect>
                 </observers>
 			</sales_order_place_after>
-			<!-- <sales_order_load_after>
-				<observers>
-                    <sberpconnect>
-                        <type>singleton</type>
-                        <class>Salore_ErpConnect_Model_Observer</class>
-                        <method>salesorder</method>
-                    </sberpconnect>
-                </observers>
-			</sales_order_load_after> -->
-			
-			
-			<!-- <sales_order_status_history_save_after>
-				<observers>
-                    <sberpconnect>
-                        <type>singleton</type>
-                        <class>Salore_ErpConnect_Model_Observer</class>
-                        <method>loadcommentorder</method>
-                    </sberpconnect>
-                </observers>
-			</sales_order_status_history_save_after> -->
-			<!-- <controller_front_init_before>
-				<observers>
-                    <sberpconnect>
-                        <type>singleton</type>
-                        <class>sberpconnect/observer</class>
-                        <method>initFrontController</method>
-                    </sberpconnect>
-                </observers>
-			</controller_front_init_before>   -->
         </events>
         <models>
 			<sberpconnect>
