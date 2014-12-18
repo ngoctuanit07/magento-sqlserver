@@ -6,14 +6,14 @@
  * versions in the future.
  *
  * @category    Salore
- * @package     Salore_Sqlsrv
+ * @package     Salore_ErpConnect
  * @author      Salore team
  * @copyright   Copyright (c) Salore team
  */
 class Salore_ErpConnect_Model_Observer
 {
 	/**
-	 * Insert Data From Magento To Sage
+	 * Insert  order data from magento  To Sage()
 	 * @param  $observer
 	 * @return statement resources
 	 */
@@ -34,8 +34,7 @@ class Salore_ErpConnect_Model_Observer
 				$order_id = $observer->getEvent()->getOrder()->getId();
 				$product = Mage::getModel('catalog/product')->load($product_id);
 				$taxClassId = $product->getTaxClassId();
-				$taxClassName = Mage::getModel('tax/class')->load($taxClassId);
-				$taxClassName = Mage::getModel('tax/class')->load($taxClassId)->getClassName();
+   				$taxClassName = Mage::getModel('tax/class')->load($taxClassId)->getClassName();
 				if(isset($order_id) && $order_id)
 				{
 					$order = Mage::getModel('sales/order')->load($order_id);

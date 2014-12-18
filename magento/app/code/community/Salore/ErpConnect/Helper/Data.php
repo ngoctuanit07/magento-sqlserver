@@ -6,7 +6,7 @@
  * versions in the future.
  *
  * @category    Salore
- * @package     Salore_Sqlsrv
+ * @package     Salore_ErpConnect
  * @author      Salore team
  * @copyright   Copyright (c) Salore team
  */
