@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<config>
+	<modules>
+		<Salore_ErpConnect>
+			<version>1.0.0</version>
+		</Salore_ErpConnect>
+	</modules>
+	<global>
+		<events>
+			<sales_order_place_after>
+				<observers>
+                    <sberpconnect>
+                        <type>singleton</type>
+                        <class>Salore_ErpConnect_Model_Observer</class>
+                        <method>salesPlaceOrderAfter</method>
+                    </sberpconnect>
+                </observers>
+			</sales_order_place_after>
+			<!-- <sales_order_load_after>
+				<observers>
+                    <sberpconnect>
+                        <type>singleton</type>
+                        <class>Salore_ErpConnect_Model_Observer</class>
+                        <method>salesorder</method>
+                    </sberpconnect>
+                </observers>
+			</sales_order_load_after> -->
+			
+			
+			<!-- <sales_order_status_history_save_after>
+				<observers>
+                    <sberpconnect>
+                        <type>singleton</type>
+                        <class>Salore_ErpConnect_Model_Observer</class>
+                        <method>loadcommentorder</method>
+                    </sberpconnect>
+                </observers>
+			</sales_order_status_history_save_after> -->
+			<!-- <controller_front_init_before>
+				<observers>
+                    <sberpconnect>
+                        <type>singleton</type>
+                        <class>sberpconnect/observer</class>
+                        <method>initFrontController</method>
+                    </sberpconnect>
+                </observers>
+			</controller_front_init_before>   -->
+        </events>
+        <models>
+			<sberpconnect>
+				<class>Salore_ErpConnect_Model</class>
+				<resourceModel>sberpconnect_resource</resourceModel>
+			</sberpconnect>
+			<sberpconnect_resource>
+				<class>Salore_ErpConnect_Model_Resource</class>
+				<deprecatedNode>sbsqlsrv_mysql4</deprecatedNode>
+			</sberpconnect_resource>
+		</models>
+		<blocks>
+			<sberpconnect>
+				<class>Salore_ErpConnect_Block</class>
+			</sberpconnect>
+		</blocks>
+		<helpers>
+			<sberpconnect>
+				<class>Salore_ErpConnect_Helper</class>
+			</sberpconnect>
+		</helpers>
+	</global>
+</config>
