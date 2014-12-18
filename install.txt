@@ -1,5 +1,5 @@
 Please follow the steps below to install the module:
-1. Install Microsof Sql Server(well tested on express version) http://www.microsoft.com/en-us/server-cloud/products/sql-server/ 
+1. Install Microsof Sql Server(well tested on full version) http://www.microsoft.com/en-us/server-cloud/products/sql-server/ 
 2. Install Php Sqlsrv Driver (http://php.net/manual/en/sqlsrv.installation.php)
 3. Copy all files/folders under magento folder to Magento Root to install module
 Example: Our Magento Root /var/www/magento
