@@ -31,15 +31,8 @@ class Salore_ErpConnect_Model_Observer
 		$bind = array();
 		$salesOrderHeader = 'tblSalesOrderHeader';
 		try {
-			if($this->setOrderData($bind , $cartItems , $order_id))
-			{
-				$db->insert($salesOrderHeader , $bind);
-			}
-			else 
-			{
-				Mage::getSingleton('core/session')->addError('Please check information order');
-			}
-			
+			$this->setOrderData($bind , $cartItems , $order_id)
+			$db->insert($salesOrderHeader , $bind);
 		} catch (Exception $e) {
 			Mage::getSingleton('core/session')->addError($e->getMessage());
 		}
