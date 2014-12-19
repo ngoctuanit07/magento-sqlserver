@@ -12,6 +12,11 @@
  */
 class Salore_ErpConnect_Model_Observer
 {
+	protected  $_helper = null;
+	public function __construct()
+	{
+		$this->_helper = Mage::helper('sberpconnect');
+	}
 	/**
 	 * Insert  order data from magento  To Sage()
 	 * @param  $observer
