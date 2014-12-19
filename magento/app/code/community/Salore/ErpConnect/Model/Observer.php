@@ -31,7 +31,7 @@ class Salore_ErpConnect_Model_Observer
 		$bind = array();
 		$salesOrderHeader = 'tblSalesOrderHeader';
 		try {
-			if($this->setOrderData($cartItems , $order_id))
+			if($this->setOrderData($bind , $cartItems , $order_id))
 			{
 				$db->insert($salesOrderHeader , $bind);
 			}
@@ -44,7 +44,7 @@ class Salore_ErpConnect_Model_Observer
 			Mage::getSingleton('core/session')->addError($e->getMessage());
 		}
 	}
-	protected  function setOrderData($cartItems , $order_id) 
+	protected  function setOrderData(&$bind , &$cartItems , &$order_id) 
 	{
 		foreach ($cartItems as $item)
 		{
