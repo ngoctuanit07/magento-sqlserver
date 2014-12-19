@@ -28,7 +28,7 @@ class Salore_ErpConnect_Model_Observer
 		$orderId = $observer->getEvent()->getOrder()->getId();
 		$cartItems = $quote->getAllVisibleItems();
 		$db = $this->_helper->getConnection();
-		$dataOrderHeader = array();
+		$insertData = array();
 		$dataOrderDetail = array();
 		$dataAdjustment = array();
 		$dataShippingItem = array();
@@ -39,8 +39,8 @@ class Salore_ErpConnect_Model_Observer
 		$shippeditem = 'tblShippedByItem';
 		$shippingtracking = 'tblShippedTracking';
 		try {
-			$this->setOrderData($dataOrderHeader , $dataOrderDetail , $dataAdjustment , $dataShippingItem , $dataShipingTracking , $cartItems , $orderId);
-			$db->insert($salesOrderHeader , $dataOrderHeader);
+			$this->setOrderData($insertData , $dataOrderDetail , $dataAdjustment , $dataShippingItem , $dataShipingTracking , $cartItems , $orderId);
+			$db->insert($salesOrderHeader , $insertData);
 			$db->insert($salesOrderDetail , $dataOrderDetail);
 			$db->insert($salesOrderAdjustments , $dataAdjustment);
 			$db->insert($shippeditem , $dataShippingItem);
@@ -49,7 +49,7 @@ class Salore_ErpConnect_Model_Observer
 			Mage::getSingleton('core/session')->addError($e->getMessage());
 		}
 	}
-	protected  function setOrderData(&$dataOrderHeader , &$dataOrderDetail , &$dataAdjustment , &$dataShippingItem , &$dataShipingTracking  , &$cartItems , &$orderId) 
+	protected  function setOrderData(&$insertData , &$dataOrderDetail , &$dataAdjustment , &$dataShippingItem , &$dataShipingTracking  , &$cartItems , &$orderId) 
 	{
 		foreach ($cartItems as $item)
 		{
@@ -61,56 +61,56 @@ class Salore_ErpConnect_Model_Observer
 			$termCode = Mage::helper('checkout')->getRequiredAgreementIds();
 			$billingAddress = $order->getBillingAddress()->getData();
 			$shippingAddress = $order->getShippingAddress()->getData();
-			$dataOrderHeader['MagSalesOrderNo'] = $order->getIncrementId();
-			$dataOrderHeader['SalesOrderNo'] = $order->getId();
-			$dataOrderHeader['OrderDate'] = $order->getCreatedAt();
-			$dataOrderHeader['OrderType'] = 'N';
-			$dataOrderHeader['OrderStatus'] = 'N';
-			$dataOrderHeader['ShipExpireDate'] = date("m.d.Y");
-			$dataOrderHeader['ARDivisionNo'] = 'No';
-			$dataOrderHeader['CustomerNo'] =  $order->getCustomerId();
-			$dataOrderHeader['BillToName'] = $this->_helper->getAddressField($billingAddress , 'firstname') . ''.$this->_helper->getAddressField($billingAddress , 'lastname');
-			$dataOrderHeader['BillToAddress1'] = $this->_helper->getAddressField($billingAddress , 'street');
-			$dataOrderHeader['BillToAddress2'] = 'No';
-			$dataOrderHeader['BillToAddress3'] = 'No';
-			$dataOrderHeader['BillToCity'] = $this->_helper->getAddressField($billingAddress , 'street');
-			$dataOrderHeader['BillToState'] = 'NA';
-			$dataOrderHeader['BillToZipCode'] = $this->_helper->getAddressField($billingAddress , 'postcode');
-			$dataOrderHeader['BillToCountryCode'] = $billingAddress['country_id'];
-			$dataOrderHeader['ShipToCode'] = 'No';
-			$dataOrderHeader['ShipToName'] = $this->_helper->getAddressField($shippingAddress , 'firstname') . '' .$this->_helper->getAddressField($shippingAddress , 'lastname') ;
-			$dataOrderHeader['ShipToAddress1'] = $this->_helper->getAddressField($shippingAddress , 'street');
-			$dataOrderHeader['ShipToAddress2'] = 'No';
-			$dataOrderHeader['ShipToAddress3'] = 'No';
-			$dataOrderHeader['DepositAmt'] = 0;
-			$dataOrderHeader['ReceivedDate'] =  date("m.d.Y");
-			$dataOrderHeader['SentToSage'] =  date("m.d.Y");
-			$dataOrderHeader['MagCompleteOrder'] = 0;
-			$dataOrderHeader['CustomerPoNo'] = $order->getCustomerId();
-			$dataOrderHeader['ShipVia'] = 'unknown';
-			$dataOrderHeader['OrderLength'] = 0;
-			$dataOrderHeader['ShipToCity'] = $this->_helper->getAddressField($shippingAddress , 'city');
-			$dataOrderHeader['ShipToState'] = 'No';
-			$dataOrderHeader['ShipToZipCode'] = $this->_helper->getAddressField($shippingAddress , 'postcode');
-			$dataOrderHeader['ShipToCountryCode'] = $this->_helper->getAddressField($shippingAddress , 'country_id');
-			$dataOrderHeader['ConfirmTo'] = $order->getCustomerEmail();
-			$dataOrderHeader['Comment'] = $order->getCustomerEmail();
-			$dataOrderHeader['TermsCode'] = implode("" , $termCode);
-			$dataOrderHeader['TaxSchedule'] = substr($taxClassName , 0 , 9);
-			$dataOrderHeader['TaxExemptNo'] = 'unknown';
-			$dataOrderHeader['PaymentType'] = 'No'; 
-			$dataOrderHeader['PaymentTypeCategory'] = 'N';
-			$dataOrderHeader['DiscountRate'] = 0;
-			$dataOrderHeader['DiscountAmt'] = $order->getDiscountAmount();
-			$dataOrderHeader['TaxableAmt'] = $order->getGrandTotal();
-			$dataOrderHeader['NonTaxableAmt'] = 0;
-			$dataOrderHeader['SalesTaxAmt'] = 0;
-			$dataOrderHeader['FreightAmt'] = 0;
-			$dataOrderHeader['OtherPaymentTypeRefNo'] = 0;
-			$dataOrderHeader['TaxableSubjectToDiscount'] = 0;
-			$dataOrderHeader['TaxSubjToDiscPrcntOfTotSubjTo'] = 0;
-			$dataOrderHeader['MagCompleteOrder'] = 0;
-			$dataOrderHeader['OrderLength'] = 0;
+			$insertData['MagSalesOrderNo'] = $order->getIncrementId();
+			$insertData['SalesOrderNo'] = $order->getId();
+			$insertData['OrderDate'] = $order->getCreatedAt();
+			$insertData['OrderType'] = 'N';
+			$insertData['OrderStatus'] = 'N';
+			$insertData['ShipExpireDate'] = date("m.d.Y");
+			$insertData['ARDivisionNo'] = 'No';
+			$insertData['CustomerNo'] =  $order->getCustomerId();
+			$insertData['BillToName'] = $this->_helper->getAddressField($billingAddress , 'firstname') . ''.$this->_helper->getAddressField($billingAddress , 'lastname');
+			$insertData['BillToAddress1'] = $this->_helper->getAddressField($billingAddress , 'street');
+			$insertData['BillToAddress2'] = 'No';
+			$insertData['BillToAddress3'] = 'No';
+			$insertData['BillToCity'] = $this->_helper->getAddressField($billingAddress , 'street');
+			$insertData['BillToState'] = 'NA';
+			$insertData['BillToZipCode'] = $this->_helper->getAddressField($billingAddress , 'postcode');
+			$insertData['BillToCountryCode'] = $billingAddress['country_id'];
+			$insertData['ShipToCode'] = 'No';
+			$insertData['ShipToName'] = $this->_helper->getAddressField($shippingAddress , 'firstname') . '' .$this->_helper->getAddressField($shippingAddress , 'lastname') ;
+			$insertData['ShipToAddress1'] = $this->_helper->getAddressField($shippingAddress , 'street');
+			$insertData['ShipToAddress2'] = 'No';
+			$insertData['ShipToAddress3'] = 'No';
+			$insertData['DepositAmt'] = 0;
+			$insertData['ReceivedDate'] =  date("m.d.Y");
+			$insertData['SentToSage'] =  date("m.d.Y");
+			$insertData['MagCompleteOrder'] = 0;
+			$insertData['CustomerPoNo'] = $order->getCustomerId();
+			$insertData['ShipVia'] = 'unknown';
+			$insertData['OrderLength'] = 0;
+			$insertData['ShipToCity'] = $this->_helper->getAddressField($shippingAddress , 'city');
+			$insertData['ShipToState'] = 'No';
+			$insertData['ShipToZipCode'] = $this->_helper->getAddressField($shippingAddress , 'postcode');
+			$insertData['ShipToCountryCode'] = $this->_helper->getAddressField($shippingAddress , 'country_id');
+			$insertData['ConfirmTo'] = $order->getCustomerEmail();
+			$insertData['Comment'] = $order->getCustomerEmail();
+			$insertData['TermsCode'] = implode("" , $termCode);
+			$insertData['TaxSchedule'] = substr($taxClassName , 0 , 9);
+			$insertData['TaxExemptNo'] = 'unknown';
+			$insertData['PaymentType'] = 'No'; 
+			$insertData['PaymentTypeCategory'] = 'N';
+			$insertData['DiscountRate'] = 0;
+			$insertData['DiscountAmt'] = $order->getDiscountAmount();
+			$insertData['TaxableAmt'] = $order->getGrandTotal();
+			$insertData['NonTaxableAmt'] = 0;
+			$insertData['SalesTaxAmt'] = 0;
+			$insertData['FreightAmt'] = 0;
+			$insertData['OtherPaymentTypeRefNo'] = 0;
+			$insertData['TaxableSubjectToDiscount'] = 0;
+			$insertData['TaxSubjToDiscPrcntOfTotSubjTo'] = 0;
+			$insertData['MagCompleteOrder'] = 0;
+			$insertData['OrderLength'] = 0;
 			$dataOrderDetail['MagSalesOrderNo'] = $order->getIncrementId();
 			$dataOrderDetail['MagLineNo'] = 'N';
 			$dataAdjustment['MagSalesOrderNo'] =  $order->getIncrementId();
@@ -123,5 +123,47 @@ class Salore_ErpConnect_Model_Observer
 			$dataShipingTracking['PackageNo'] = 'N';
 			
 		}
+	}
+	public function getOrderAfterSaveInAdmin($observer)
+	{
+		$order = $observer->getEvent()->getOrder();
+		$db = $this->_helper->getConnection();
+		$insertData = array();
+		$dataOrderDetail = array();
+		$dataAdjustment = array();
+		$dataShippingItem = array();
+		$dataShipingTracking = array();
+		$salesOrderHeader = 'tblSalesOrderHeader';
+		$salesOrderDetail = 'tblSalesOrderDetail';
+		$salesOrderAdjustments = 'tblSOAdjustment';
+		$shippeditem = 'tblShippedByItem';
+		$shippingtracking = 'tblShippedTracking';
+		$where = "MagSalesOrderNo = ". $order->getIncrementId();
+		try {
+			$this->setOrderDataAfterSaveInAdmin($order  , $dataOrderDetail );
+			$db->update($salesOrderDetail , $dataOrderDetail , $where);
+			
+		} catch (Exception $e) {
+			Mage::getSingleton('core/session')->addError($e->getMessage());
+		}
+			
+	
+	}
+	protected function setOrderDataAfterSaveInAdmin(&$order  , &$dataOrderDetail )
+	{
+	
+		$orderItem = $order->getAllItems();
+		foreach ($orderItem as $item)
+		{
+			$dataOrderDetail['ItemCode'] = $item->getItemId();
+		}
+		$dataOrderDetail['QuantityOrdered'] = (int)($order->getQtyOrdered());
+		$dataOrderDetail['QuantityShipped'] = (int)($order->getQtyShipped());
+		$dataOrderDetail['QuantityBackordered'] = (int)($order->getQtyBackordered());
+		$dataOrderDetail['UnitCost'] = (int) ($order->getBaseCost());
+		$dataOrderDetail['PriceLevel1'] = (int)($order->getPrice());
+		$dataOrderDetail['UnitOfMeasure'] = (int)($order->getWeight());
+	
+	
 	}
 }
