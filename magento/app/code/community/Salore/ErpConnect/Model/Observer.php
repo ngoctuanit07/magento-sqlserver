@@ -39,7 +39,7 @@ class Salore_ErpConnect_Model_Observer
 			Mage::getSingleton('core/session')->addError($e->getMessage());
 		}
 	}
-	protected  function setOrderData() 
+	protected  function setOrderData($cartItems , $order_id) 
 	{
 		foreach ($cartItems as $item)
 		{
