@@ -34,6 +34,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * MEMORY engine type for MySQL tables
      */
     protected $decimal = 'decimal';
+    protected  $columname = 'COLUMN_NAME';
     const ENGINE_MEMORY = 'MEMORY';
 
     /**
@@ -409,7 +410,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
     public function tableColumnExists($tableName, $columnName, $schemaName = null) {
         $describe = $this->describeTable($tableName, $schemaName);
         foreach ($describe as $column) {
-            if ($column['COLUMN_NAME'] == $columnName) {
+            if ($column[$columname] == $columnName) {
                 return true;
             }
         }
@@ -478,7 +479,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
 
         $foreignKeys = $this->getForeignKeys($tableName, $schemaName);
         foreach ($foreignKeys as $fkProp) {
-            if ($fkProp['COLUMN_NAME'] == $columnName) {
+            if ($fkProp[$columname] == $columnName) {
                 $alterDrop[] = 'DROP FOREIGN KEY ' . $this->quoteIdentifier($fkProp['FK_NAME']);
             }
         }
@@ -632,7 +633,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                     'FK_NAME'           => $match[1],
                     'SCHEMA_NAME'       => $schemaName,
                     'TABLE_NAME'        => $tableName,
-                    'COLUMN_NAME'       => $match[2],
+                    $columname       => $match[2],
                     'REF_SHEMA_NAME'    => isset($match[3]) ? $match[3] : $schemaName,
                     'REF_TABLE_NAME'    => $match[4],
                     'REF_COLUMN_NAME'   => $match[5],
@@ -948,13 +949,13 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
         $foreignKeys = $this->getForeignKeys($tableName);
         foreach ($foreignKeys as $keyData) {
             $fkName = $this->getForeignKeyName(
-                $newTableName, $keyData['COLUMN_NAME'], $keyData['REF_TABLE_NAME'], $keyData['REF_COLUMN_NAME']
+                $newTableName, $keyData[$columname], $keyData['REF_TABLE_NAME'], $keyData['REF_COLUMN_NAME']
             );
             $onDelete = $this->_getDdlAction($keyData['ON_DELETE']);
             $onUpdate = $this->_getDdlAction($keyData['ON_UPDATE']);
 
             $table->addForeignKey(
-                $fkName, $keyData['COLUMN_NAME'], $keyData['REF_TABLE_NAME'],
+                $fkName, $keyData[$columname], $keyData['REF_TABLE_NAME'],
                 $keyData['REF_COLUMN_NAME'], $onDelete, $onUpdate
             );
         }
@@ -1320,11 +1321,11 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
         foreach ($columns as $columnData) {
             $columnDefinition = $this->_getColumnDefinition($columnData);
             if ($columnData['PRIMARY']) {
-                $primary[$columnData['COLUMN_NAME']] = $columnData['PRIMARY_POSITION'];
+                $primary[$columnData[$columname]] = $columnData['PRIMARY_POSITION'];
             }
 
             $definition[] = sprintf('  %s %s',
-                $this->quoteIdentifier($columnData['COLUMN_NAME']),
+                $this->quoteIdentifier($columnData[$columname]),
                 $columnDefinition
             );
         }
@@ -1401,7 +1402,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
 
                 $definition[] = sprintf('  CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s) ON DELETE %s ON UPDATE %s',
                     $this->quoteIdentifier($fkData['FK_NAME']),
-                    $this->quoteIdentifier($fkData['COLUMN_NAME']),
+                    $this->quoteIdentifier($fkData[$columname]),
                     $this->quoteIdentifier($fkData['REF_TABLE_NAME']),
                     $this->quoteIdentifier($fkData['REF_COLUMN_NAME']),
                     $onDelete,
@@ -2509,7 +2510,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                 $describe = $this->describeTable($table);
                 foreach ($describe as $column) {
                     if ($column['PRIMARY'] === false) {
-                        $fields[] = $column['COLUMN_NAME'];
+                        $fields[] = $column[$columname];
                     }
                 }
             }
