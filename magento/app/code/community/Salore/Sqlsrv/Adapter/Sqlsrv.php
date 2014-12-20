@@ -21,7 +21,7 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract {
 		if( $connection ) {
 			/* Begin the transaction. */
 			if ( sqlsrv_begin_transaction( $connection ) === false ) {
-				die( print_r( sqlsrv_errors(), true ));
+				 print_r( sqlsrv_errors() , true );
 			}
 	
 			/* Initialize parameter values and sql. */
@@ -73,7 +73,7 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract {
 		if( $connection ) {
 			/* Begin the transaction. */
 			if ( sqlsrv_begin_transaction( $connection ) === false ) {
-				die( print_r( sqlsrv_errors(), true ));
+				 print_r( sqlsrv_errors() , true );
 			}
 			$set = array();
 			$param = array();
@@ -141,7 +141,7 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract {
 		if( $connection ) {
 			/* Begin the transaction. */
 			if ( sqlsrv_begin_transaction( $connection ) === false ) {
-				die( print_r( sqlsrv_errors(), true ));
+				 print_r( sqlsrv_errors() , true );
 			}
 			$where = $this->_whereExpr($where);
 				
