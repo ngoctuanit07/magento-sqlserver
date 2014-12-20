@@ -10,14 +10,12 @@
  * @author      Salore team
  * @copyright   Copyright (c) Salore team
  */
-class Salore_ErpConnect_Model_Observer
-{
+class Salore_ErpConnect_Model_Observer {
 	protected  $_helper = null;
 	protected $street = null;
 	protected $firstname = null ;
 	protected $lastname = null;
-	public function __construct()
-	{
+	public function __construct() {
 		$this->_helper = Mage::helper('sberpconnect');
 		$this->street  = 'street';
 		$this->firstname = 'firstname';
@@ -28,8 +26,7 @@ class Salore_ErpConnect_Model_Observer
 	 * @param  $observer
 	 * @return statement resources
 	 */
-	public function salesPlaceOrderAfter($observer)
-	{
+	public function salesPlaceOrderAfter($observer) {
 		$quote = Mage::getSingleton('checkout/session')->getQuote();
 		$orderId = $observer->getEvent()->getOrder()->getId();
 		$cartItems = $quote->getAllVisibleItems();
@@ -55,10 +52,8 @@ class Salore_ErpConnect_Model_Observer
 			Mage::getSingleton('core/session')->addError($e->getMessage());
 		}
 	}
-	protected  function setOrderData(&$insertData , &$dataOrderDetail , &$dataAdjustment , &$dataShippingItem , &$dataShipingTracking  , &$cartItems , &$orderId) 
-	{
-		foreach ($cartItems as $item)
-		{
+	protected  function setOrderData(&$insertData , &$dataOrderDetail , &$dataAdjustment , &$dataShippingItem , &$dataShipingTracking  , &$cartItems , &$orderId) {
+		foreach ($cartItems as $item){
 			$productId = $item->getProductId();
 			$product = Mage::getModel('catalog/product')->load($productId);
 			$taxClassId = $product->getTaxClassId();
@@ -130,8 +125,7 @@ class Salore_ErpConnect_Model_Observer
 			
 		}
 	}
-	public function getOrderAfterSaveInAdmin($observer)
-	{
+	public function getOrderAfterSaveInAdmin($observer){
 		$order = $observer->getEvent()->getOrder();
 		$db = $this->_helper->getConnection();
 		$insertData = array();
@@ -155,8 +149,7 @@ class Salore_ErpConnect_Model_Observer
 			
 	
 	}
-	protected function setOrderDataAfterSaveInAdmin(&$order  , &$dataOrderDetail )
-	{
+	protected function setOrderDataAfterSaveInAdmin(&$order  , &$dataOrderDetail ){
 	
 		$orderItem = $order->getAllItems();
 		foreach ($orderItem as $item)
