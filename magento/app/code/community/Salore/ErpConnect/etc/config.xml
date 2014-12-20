@@ -16,7 +16,7 @@
                     </sberpconnect>
                 </observers>
 			</sales_order_place_after>
-			<sales_order_load_after>
+			<!-- <sales_order_load_after>
 				<observers>
                     <sberpconnect>
                         <type>singleton</type>
@@ -24,7 +24,7 @@
                         <method>getOrderAfterSaveInAdmin</method>
                     </sberpconnect>
                 </observers>
-			</sales_order_load_after>
+			</sales_order_load_after> -->
         </events>
         <models>
 			<sberpconnect>
