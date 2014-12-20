@@ -28,6 +28,7 @@ class Salore_ErpConnect_Model_Observer {
 	 */
 	public function salesPlaceOrderAfter($observer) {
 		$quote = Mage::getSingleton('checkout/session')->getQuote();
+		$shippingmethod = $quote ->getShippingAddress()->getShippingMethod();
 		$orderId = $observer->getEvent()->getOrder()->getId();
 		$cartItems = $quote->getAllVisibleItems();
 		$db = $this->_helper->getConnection();
@@ -42,7 +43,7 @@ class Salore_ErpConnect_Model_Observer {
 		$shippeditem = 'tblShippedByItem';
 		$shippingtracking = 'tblShippedTracking';
 		try {
-			$this->setOrderData($insertData , $dataOrderDetail , $dataAdjustment , $dataShippingItem , $dataShipingTracking , $cartItems , $orderId);
+			$this->setOrderData( $shippingmethod ,$insertData , $dataOrderDetail , $dataAdjustment , $dataShippingItem , $dataShipingTracking , $cartItems , $orderId);
 			$db->insert($salesOrderHeader , $insertData);
 			$db->insert($salesOrderDetail , $dataOrderDetail);
 			$db->insert($salesOrderAdjustments , $dataAdjustment);
@@ -52,7 +53,7 @@ class Salore_ErpConnect_Model_Observer {
 			Mage::getSingleton('core/session')->addError($e->getMessage());
 		}
 	}
-	protected  function setOrderData(&$insertData , &$dataOrderDetail , &$dataAdjustment , &$dataShippingItem , &$dataShipingTracking  , &$cartItems , &$orderId) {
+	protected  function setOrderData( &$shippingmethod , &$insertData , &$dataOrderDetail , &$dataAdjustment , &$dataShippingItem , &$dataShipingTracking  , &$cartItems , &$orderId) {
 		foreach ($cartItems as $item){
 			$productId = $item->getProductId();
 			$product = Mage::getModel('catalog/product')->load($productId);
@@ -122,6 +123,11 @@ class Salore_ErpConnect_Model_Observer {
 			$dataShipingTracking['MagSalesOrderNo'] = $order->getIncrementId();
 			$dataShipingTracking['SageInvoiceNo'] = 'N';
 			$dataShipingTracking['PackageNo'] = 'N';
+			$dataShipingTracking['ShipMethod'] = $shippingmethod;
+			$dataShipingTracking['ShipCarrier'] = $shippingmethod;
+			$dataShippingItem['ShipMethod'] =  $shippingmethod;
+			$dataShippingItem['ShipCarrier'] =  $shippingmethod;
+			
 			
 		}
 	}
@@ -140,8 +146,10 @@ class Salore_ErpConnect_Model_Observer {
 		$shippingtracking = 'tblShippedTracking';
 		$where = "MagSalesOrderNo = ". $order->getIncrementId();
 		try {
-			$this->setOrderDataAfterSaveInAdmin($order  , $dataOrderDetail );
+			$this->setOrderDataAfterSaveInAdmin($order , $dataShippingItem , $dataShipingTracking , $dataOrderDetail );
 			$db->update($salesOrderDetail , $dataOrderDetail , $where);
+			$db->update($shippingtracking , $dataShipingTracking , $where);
+			$db->update($shippeditem , $dataShippingItem , $where);
 			
 		} catch (Exception $e) {
 			Mage::getSingleton('core/session')->addError($e->getMessage());
@@ -149,13 +157,25 @@ class Salore_ErpConnect_Model_Observer {
 			
 	
 	}
-	protected function setOrderDataAfterSaveInAdmin(&$order  , &$dataOrderDetail ){
+	protected function setOrderDataAfterSaveInAdmin(&$dataShippingItem ,&$order , &$dataShipingTracking , &$dataOrderDetail ){
 	
 		$orderItem = $order->getAllItems();
+		$shipping = $order->getShippingAddress()->getShippingMethod();
 		foreach ($orderItem as $item)
 		{
 			
 			$dataOrderDetail['ItemCode'] = $item->getItemId();
+			$dataShippingItem['ItemCode'] = $item->getItemId();
+		}
+		$shipmentCollection = Mage:: getResourceModel('sales/order_shipment_collection')
+		->setOrderFilter($order)
+		->load();
+		foreach ($shipmentCollection as $shipment) {
+			foreach($shipment->getAllTracks() as $tracknum) {
+				$dataShipingTracking[ 'TrackingID'] = $tracknum->getId();
+			}
+			$dataShipingTracking[ 'ShipDate'] = $shipment->getCreatedAt();
+			$dataShippingItem['ShipDate'] =  $shipment->getCreatedAt();
 		}
 		$dataOrderDetail['QuantityOrdered'] = (int)($order->getQtyOrdered());
 		$dataOrderDetail['QuantityShipped'] = (int)($order->getQtyShipped());
