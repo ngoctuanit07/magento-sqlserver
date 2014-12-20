@@ -33,6 +33,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
     /**
      * MEMORY engine type for MySQL tables
      */
+    protected $decimal = 'decimal';
     const ENGINE_MEMORY = 'MEMORY';
 
     /**
@@ -141,8 +142,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
         Varien_Db_Ddl_Table::TYPE_INTEGER       => 'int',
         Varien_Db_Ddl_Table::TYPE_BIGINT        => 'bigint',
         Varien_Db_Ddl_Table::TYPE_FLOAT         => 'float',
-        Varien_Db_Ddl_Table::TYPE_DECIMAL       => 'decimal',
-        Varien_Db_Ddl_Table::TYPE_NUMERIC       => 'decimal',
+        Varien_Db_Ddl_Table::TYPE_DECIMAL       => $decimal,
+        Varien_Db_Ddl_Table::TYPE_NUMERIC       => $decimal,
         Varien_Db_Ddl_Table::TYPE_DATE          => 'date',
         Varien_Db_Ddl_Table::TYPE_TIMESTAMP     => 'timestamp',
         Varien_Db_Ddl_Table::TYPE_DATETIME      => 'datetime',
@@ -2072,7 +2073,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                 }
                 break;
 
-            case 'decimal':
+            case $decimal:
                 $precision  = 10;
                 $scale      = 0;
                 if (isset($column['SCALE'])) {
