@@ -13,6 +13,9 @@
 class Salore_ErpConnect_Model_Observer
 {
 	protected  $_helper = null;
+	protected $street = 'street';
+	protected $firstname = 'firstname';
+	protected $lastname = 'lastname';
 	public function __construct()
 	{
 		$this->_helper = Mage::helper('sberpconnect');
@@ -69,17 +72,17 @@ class Salore_ErpConnect_Model_Observer
 			$insertData['ShipExpireDate'] = date("m.d.Y");
 			$insertData['ARDivisionNo'] = 'No';
 			$insertData['CustomerNo'] =  $order->getCustomerId();
-			$insertData['BillToName'] = $this->_helper->getAddressField($billingAddress , 'firstname') . ''.$this->_helper->getAddressField($billingAddress , 'lastname');
-			$insertData['BillToAddress1'] = $this->_helper->getAddressField($billingAddress , 'street');
+			$insertData['BillToName'] = $this->_helper->getAddressField($billingAddress , $firstname) . ''.$this->_helper->getAddressField($billingAddress , $lastname);
+			$insertData['BillToAddress1'] = $this->_helper->getAddressField($billingAddress , $street);
 			$insertData['BillToAddress2'] = 'No';
 			$insertData['BillToAddress3'] = 'No';
-			$insertData['BillToCity'] = $this->_helper->getAddressField($billingAddress , 'street');
+			$insertData['BillToCity'] = $this->_helper->getAddressField($billingAddress , $street);
 			$insertData['BillToState'] = 'NA';
 			$insertData['BillToZipCode'] = $this->_helper->getAddressField($billingAddress , 'postcode');
 			$insertData['BillToCountryCode'] = $billingAddress['country_id'];
 			$insertData['ShipToCode'] = 'No';
-			$insertData['ShipToName'] = $this->_helper->getAddressField($shippingAddress , 'firstname') . '' .$this->_helper->getAddressField($shippingAddress , 'lastname') ;
-			$insertData['ShipToAddress1'] = $this->_helper->getAddressField($shippingAddress , 'street');
+			$insertData['ShipToName'] = $this->_helper->getAddressField($shippingAddress , $firstname) . '' .$this->_helper->getAddressField($shippingAddress , $lastname) ;
+			$insertData['ShipToAddress1'] = $this->_helper->getAddressField($shippingAddress , $street);
 			$insertData['ShipToAddress2'] = 'No';
 			$insertData['ShipToAddress3'] = 'No';
 			$insertData['DepositAmt'] = 0;
