@@ -46,7 +46,7 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract {
 			//execute the statement
 			$stmt = sqlsrv_query( $connection, $sql, $param);
 			if( $stmt === false ) {
-				 print_r( sqlsrv_errors() , true );
+				die( print_r( sqlsrv_errors() , true ));
 				sqlsrv_rollback( $connection );
 			}
 			else {
@@ -84,18 +84,19 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract {
 				} else {
 					if ($this->supportsParameters('positional')) {
 						$val = '?';
-					} else if ($this->supportsParameters('named')) {
+					} else {
+						if ($this->supportsParameters('named')) {
 							unset($bind[$col]);
 							$bind[':col'.$i] = $val;
 							$val = ':col'.$i;
 							$i++;
-						} 
-					 else {
+						} else {
 							/** @see Zend_Db_Adapter_Exception */
+							#require_once 'Zend/Db/Adapter/Exception.php';
 							throw new Zend_Db_Adapter_Exception(get_class($this) ." doesn't support positional or named binding");
 						}
 					}
-			}
+				}
 				$set[] = $col . ' = ' . $val;
 			}
 				
