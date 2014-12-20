@@ -705,7 +705,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
 
                 $upperKeyName = strtoupper($row[$fieldKeyName]);
                 if (isset($ddl[$upperKeyName])) {
-                    $ddl[$upperKeyName]['fields'][] = $row[$fieldColumn]; // for compatible
+                    $ddl[$upperKeyName]['fields'][] = $row[$fieldColumn]; 
                     $ddl[$upperKeyName]['COLUMNS_LIST'][] = $row[$fieldColumn];
                 } else {
                     $ddl[$upperKeyName] = array(
@@ -715,8 +715,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                         'COLUMNS_LIST'  => array($row[$fieldColumn]),
                         'INDEX_TYPE'    => $indexType,
                         'INDEX_METHOD'  => $row[$fieldIndexType],
-                        'type'          => strtolower($indexType), // for compatibility
-                        'fields'        => array($row[$fieldColumn]) // for compatibility
+                        'type'          => strtolower($indexType), 
+                        'fields'        => array($row[$fieldColumn]) 
                     );
                 }
             }
