@@ -1046,11 +1046,11 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      */
     public function insertOnDuplicate($table, array $data, array $fields = array()) {
         // extract and quote col names from the array keys
-        $row    = reset($data); // get first element from data array
-        $bind   = array(); // SQL bind array
+        $row    = reset($data); 
+        $bind   = array(); 
         $values = array();
 
-        if (is_array($row)) { // Array of column-value pairs
+        if (is_array($row)) { 
             $cols = array_keys($row);
             foreach ($data as $row) {
                 if (array_diff($cols, array_keys($row))) {
@@ -1059,7 +1059,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                 $values[] = $this->_prepareInsertData($row, $bind);
             }
             unset($row);
-        } else { // Column-value pairs
+        } else { 
             $cols     = array_keys($data);
             $values[] = $this->_prepareInsertData($data, $bind);
         }
