@@ -42,7 +42,7 @@
 			<connection>
 				<types>
 					<sbmssql>
-						<adapter>Salore_Mssql_Adapter_Sqlsrv</adapter>
+						<adapter>Salore_Mssql_Adapter_Mssql</adapter>
 					</sbmssql>
 				</types>
 			</connection>
