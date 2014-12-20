@@ -4,9 +4,6 @@ Mage::app();
 Mage::setIsDeveloperMode(true);
 ini_set('display_errors', 1);
 //$connection = Mage::getSingleton('core/resource')->getConnection('sbmssql_write');
-$result = $connection->getServerVersion();
-print_r($result); die();
-
 $connection = new Zend_Db_Adapter_Pdo_Mssql(array(
 		'host'     => '192.168.1.211 , 1433', // parklife
 		'username' => 'sa',
@@ -14,3 +11,5 @@ $connection = new Zend_Db_Adapter_Pdo_Mssql(array(
 		'dbname'   => 'Sage',
 		'pdoType'  =>  'dblib' )
 );
+$result = $connection->getServerVersion();
+print_r($result); die();
