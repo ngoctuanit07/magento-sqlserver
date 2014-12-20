@@ -10,15 +10,13 @@
  * @author      Salore team
  * @copyright   Copyright (c) Salore team
  */
-class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract
-{
+class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract {
 	/**
 	 * Insert data to table in Database
 	 * @param string $table , array $bind
 	 * @return  statement resources
 	 */
-	public function insert($table, array $bind)
-	{
+	public function insert($table, array $bind) {
 		$connection = $this->getConnection();
 		if( $connection ) {
 			/* Begin the transaction. */
@@ -48,19 +46,17 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract
 			//execute the statement
 			$stmt = sqlsrv_query( $connection, $sql, $param);
 			if( $stmt === false ) {
-				die( print_r( sqlsrv_errors(), true));
+				 print_r( sqlsrv_errors() , true );
 				sqlsrv_rollback( $connection );
-				//echo "Transaction rolled back.<br />";
 			}
 			else
 			{
 				sqlsrv_commit( $connection );
-				
 				sqlsrv_free_stmt( $stmt);
 			}
 		}else{
 			echo "Connection could not be established.<br />";
-			die( print_r( sqlsrv_errors(), true));
+			 print_r( sqlsrv_errors() , true );
 		}
 	}
 	/**
@@ -68,8 +64,7 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract
 	 * @param string $table , string $where
 	 * @return  statement resources
 	 */
-	public function update($table, array $bind, $where = '')
-	{
+	public function update($table, array $bind, $where = '') {
 		/**
 		 * Build "col = ?" pairs for the statement,
 		 * except for Zend_Db_Expr which is treated literally.
@@ -121,20 +116,18 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract
 			*/
 			$stmt = sqlsrv_query( $connection, $sql, $param );
 			if( $stmt === false ) {
-				die( print_r( sqlsrv_errors(), true));
+				 print_r( sqlsrv_errors() , true );
 				sqlsrv_rollback( $connection );
 				echo "Transaction rolled back.<br />";
 			}
-			else
-			{
+			else {
 				sqlsrv_commit( $connection );
 				sqlsrv_free_stmt( $stmt);
 			}
 		}
-		else{
+		else {
 			echo "Connection could not be established.<br />";
-			die( print_r( sqlsrv_errors(), true));
-	
+			 print_r( sqlsrv_errors() , true );
 		}
 	}
 	
@@ -143,8 +136,7 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract
 	 * @param string $table , string $where
 	 * @return  statement resources
 	 */
-	public function delete($table, $where = '')
-	{
+	public function delete($table, $where = '') {
 		$connection = $this->getConnection();
 		if( $connection ) {
 			/* Begin the transaction. */
@@ -164,19 +156,17 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract
 			*/
 			$stmt = sqlsrv_query( $connection, $sql);
 			if( $stmt === false ) {
-				die( print_r( sqlsrv_errors(), true));
+				 print_r( sqlsrv_errors() , true );
 				sqlsrv_rollback( $connection );
-				echo "Transaction rolled back.<br />";
 			}
 			else
 			{
 				sqlsrv_commit( $connection );
-				echo "Transaction committed.<br />";
 			}
 		}
 		else{
 			echo "Connection could not be established.<br />";
-			die( print_r( sqlsrv_errors(), true));
+			 print_r( sqlsrv_errors() , true );
 	
 		}
 	
@@ -186,8 +176,7 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract
 	 *
 	 * @return Varien_Db_Select
 	 */
-	public function select()
-	{
+	public function select() {
 		return new Zend_Db_Select($this);
 	}
 }
