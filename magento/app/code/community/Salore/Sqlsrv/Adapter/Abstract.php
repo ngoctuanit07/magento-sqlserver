@@ -10,7 +10,8 @@
  * @author      Salore team
  * @copyright   Copyright (c) Salore team
  */
-class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements Varien_Db_Adapter_Interface {
+class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements Varien_Db_Adapter_Interface
+{
     const DEBUG_CONNECT         = 0;
     const DEBUG_TRANSACTION     = 1;
     const DEBUG_QUERY           = 2;
@@ -33,8 +34,6 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
     /**
      * MEMORY engine type for MySQL tables
      */
-    protected $decimal = 'decimal';
-    protected  $columname = 'COLUMN_NAME';
     const ENGINE_MEMORY = 'MEMORY';
 
     /**
@@ -143,8 +142,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
         Varien_Db_Ddl_Table::TYPE_INTEGER       => 'int',
         Varien_Db_Ddl_Table::TYPE_BIGINT        => 'bigint',
         Varien_Db_Ddl_Table::TYPE_FLOAT         => 'float',
-        Varien_Db_Ddl_Table::TYPE_DECIMAL       => $decimal,
-        Varien_Db_Ddl_Table::TYPE_NUMERIC       => $decimal,
+        Varien_Db_Ddl_Table::TYPE_DECIMAL       => 'decimal',
+        Varien_Db_Ddl_Table::TYPE_NUMERIC       => 'decimal',
         Varien_Db_Ddl_Table::TYPE_DATE          => 'date',
         Varien_Db_Ddl_Table::TYPE_TIMESTAMP     => 'timestamp',
         Varien_Db_Ddl_Table::TYPE_DATETIME      => 'datetime',
@@ -160,18 +159,26 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @var array
      */
     protected $_ddlRoutines = array('alt', 'cre', 'ren', 'dro', 'tru');
+
+    /**
+     * DDL statements for temporary tables
+     *
+     * @var string
+     */
+    //protected $_tempRoutines =  '#^\w+\s+temporary\s#im';
+
     /**
      * Allowed interval units array
      *
      * @var array
      */
     protected $_intervalUnits = array(
-        static::INTERVAL_YEAR     => 'YEAR',
-        static::INTERVAL_MONTH    => 'MONTH',
-        static::INTERVAL_DAY      => 'DAY',
-        static::INTERVAL_HOUR     => 'HOUR',
-        static::INTERVAL_MINUTE   => 'MINUTE',
-        static::INTERVAL_SECOND   => 'SECOND',
+        self::INTERVAL_YEAR     => 'YEAR',
+        self::INTERVAL_MONTH    => 'MONTH',
+        self::INTERVAL_DAY      => 'DAY',
+        self::INTERVAL_HOUR     => 'HOUR',
+        self::INTERVAL_MINUTE   => 'MINUTE',
+        self::INTERVAL_SECOND   => 'SECOND',
     );
 
     /**
@@ -187,7 +194,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      *
      * @return int
      */
-    public function getTransactionLevel() {
+    public function getTransactionLevel()
+    {
         return $this->_transactionLevel;
     }
 
@@ -199,7 +207,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string|Zend_Db_Select $sql
      * @throws Zend_Db_Adapter_Exception
      */
-    protected function _checkDdlTransaction($sql) {
+    protected function _checkDdlTransaction($sql)
+    {
         if (is_string($sql) && $this->getTransactionLevel() > 0) {
             $startSql = strtolower(substr(ltrim($sql), 0, 3));
             if (in_array($startSql, $this->_ddlRoutines)
@@ -215,24 +224,26 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * All bind parameter names must begin with ':'.
      *
      * @param string|Zend_Db_Select $sql The SQL statement with placeholders.
-     * @param mixed $bind An array of data or data itstatic to bind to the placeholders.
+     * @param mixed $bind An array of data or data itself to bind to the placeholders.
      * @return Zend_Db_Statement_Pdo
      * @throws Zend_Db_Adapter_Exception To re-throw PDOException.
      */
-    public function query($sql, $bind = array()) {
+    public function query($sql, $bind = array())
+    {
         $this->_debugTimer();
         try {
             $this->_checkDdlTransaction($sql);
             $this->_prepareQuery($sql, $bind);
             $result = parent::query($sql, $bind);
         } catch (Exception $e) {
-            $this->_debugStat(static::DEBUG_QUERY, $sql, $bind);
+            $this->_debugStat(self::DEBUG_QUERY, $sql, $bind);
             $this->_debugException($e);
         }
-        $this->_debugStat(static::DEBUG_QUERY, $sql, $bind, $result);
+        $this->_debugStat(self::DEBUG_QUERY, $sql, $bind, $result);
         return $result;
     }
-    protected function _debugException(Exception $e) {
+    protected function _debugException(Exception $e)
+    {
     	if (!$this->_debug) {
     		throw $e;
     	}
@@ -252,7 +263,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param mixed $bind
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    protected function _prepareQuery(&$sql, &$bind = array()) {
+    protected function _prepareQuery(&$sql, &$bind = array())
+    {
         $sql = (string) $sql;
         if (!is_array($bind)) {
             $bind = array($bind);
@@ -291,7 +303,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param array $matches
      * @return string
      */
-    public function proccessBindCallback($matches) {
+    public function proccessBindCallback($matches)
+    {
         if (isset($matches[6]) && (
             strpos($matches[6], "'") !== false ||
             strpos($matches[6], ':') !== false ||
@@ -312,7 +325,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @throws Zend_Db_Exception
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function multiQuery($sql) {
+    public function multiQuery($sql)
+    {
         return $this->multi_query($sql);
     }
 
@@ -322,7 +336,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $sql
      * @return array
      */
-    public function multi_query($sql) {
+    public function multi_query($sql)
+    {
         ##$result = $this->raw_query($sql);
 
         #$this->beginTransaction();
@@ -359,7 +374,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function dropForeignKey($tableName, $fkName, $schemaName = null) {
+    public function dropForeignKey($tableName, $fkName, $schemaName = null)
+    {
         $foreignKeys = $this->getForeignKeys($tableName, $schemaName);
         $fkName = strtoupper($fkName);
         if (substr($fkName, 0, 3) == 'FK_') {
@@ -394,7 +410,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      */
     public function addConstraint($fkName, $tableName, $columnName,
         $refTableName, $refColumnName, $onDelete = Varien_Db_Adapter_Interface::FK_ACTION_CASCADE,
-        $onUpdate = Varien_Db_Adapter_Interface::FK_ACTION_CASCADE, $purge = false) {
+        $onUpdate = Varien_Db_Adapter_Interface::FK_ACTION_CASCADE, $purge = false)
+    {
         return $this->addForeignKey($fkName, $tableName, $columnName, $refTableName, $refColumnName,
             $onDelete, $onUpdate, $purge);
     }
@@ -407,10 +424,11 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return boolean
      */
-    public function tableColumnExists($tableName, $columnName, $schemaName = null) {
+    public function tableColumnExists($tableName, $columnName, $schemaName = null)
+    {
         $describe = $this->describeTable($tableName, $schemaName);
         foreach ($describe as $column) {
-            if ($column[$columname] == $columnName) {
+            if ($column['COLUMN_NAME'] == $columnName) {
                 return true;
             }
         }
@@ -431,7 +449,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return  int|boolean
      * @throws  Zend_Db_Exception
      */
-    public function addColumn($tableName, $columnName, $definition, $schemaName = null) {
+    public function addColumn($tableName, $columnName, $definition, $schemaName = null)
+    {
         if ($this->tableColumnExists($tableName, $columnName, $schemaName)) {
             return true;
         }
@@ -470,7 +489,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return bool
      */
-    public function dropColumn($tableName, $columnName, $schemaName = null) {
+    public function dropColumn($tableName, $columnName, $schemaName = null)
+    {
         if (!$this->tableColumnExists($tableName, $columnName, $schemaName)) {
             return true;
         }
@@ -479,7 +499,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
 
         $foreignKeys = $this->getForeignKeys($tableName, $schemaName);
         foreach ($foreignKeys as $fkProp) {
-            if ($fkProp[$columname] == $columnName) {
+            if ($fkProp['COLUMN_NAME'] == $columnName) {
                 $alterDrop[] = 'DROP FOREIGN KEY ' . $this->quoteIdentifier($fkProp['FK_NAME']);
             }
         }
@@ -510,7 +530,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @throws Zend_Db_Exception
      */
     public function changeColumn($tableName, $oldColumnName, $newColumnName, $definition, $flushData = false,
-        $schemaName = null) {
+        $schemaName = null)
+    {
         if (!$this->tableColumnExists($tableName, $oldColumnName, $schemaName)) {
             throw new Zend_Db_Exception(sprintf(
                 'Column "%s" does not exist in table "%s".',
@@ -550,7 +571,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return Varien_Db_Adapter_Pdo_Mysql
      * @throws Zend_Db_Exception
      */
-    public function modifyColumn($tableName, $columnName, $definition, $flushData = false, $schemaName = null) {
+    public function modifyColumn($tableName, $columnName, $definition, $flushData = false, $schemaName = null)
+    {
         if (!$this->tableColumnExists($tableName, $columnName, $schemaName)) {
             throw new Zend_Db_Exception(sprintf('Column "%s" does not exist in table "%s".', $columnName, $tableName));
         }
@@ -579,7 +601,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return array|false
      */
-    public function showTableStatus($tableName, $schemaName = null) {
+    public function showTableStatus($tableName, $schemaName = null)
+    {
         $fromDbName = null;
         if ($schemaName !== null) {
             $fromDbName = ' FROM ' . $this->quoteIdentifier($schemaName);
@@ -614,9 +637,10 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return array
      */
-    public function getForeignKeys($tableName, $schemaName = null) {
+    public function getForeignKeys($tableName, $schemaName = null)
+    {
         $cacheKey = $this->_getTableName($tableName, $schemaName);
-        $ddl = $this->loadDdlCache($cacheKey, static::DDL_FOREIGN_KEY);
+        $ddl = $this->loadDdlCache($cacheKey, self::DDL_FOREIGN_KEY);
         if ($ddl === false) {
             $ddl = array();
             $createSql = $this->getCreateTable($tableName, $schemaName);
@@ -633,7 +657,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                     'FK_NAME'           => $match[1],
                     'SCHEMA_NAME'       => $schemaName,
                     'TABLE_NAME'        => $tableName,
-                    $columname       => $match[2],
+                    'COLUMN_NAME'       => $match[2],
                     'REF_SHEMA_NAME'    => isset($match[3]) ? $match[3] : $schemaName,
                     'REF_TABLE_NAME'    => $match[4],
                     'REF_COLUMN_NAME'   => $match[5],
@@ -642,7 +666,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                 );
             }
 
-            $this->saveDdlCache($cacheKey, static::DDL_FOREIGN_KEY, $ddl);
+            $this->saveDdlCache($cacheKey, self::DDL_FOREIGN_KEY, $ddl);
         }
 
         return $ddl;
@@ -672,9 +696,10 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return array
      */
-    public function getIndexList($tableName, $schemaName = null) {
+    public function getIndexList($tableName, $schemaName = null)
+    {
         $cacheKey = $this->_getTableName($tableName, $schemaName);
-        $ddl = $this->loadDdlCache($cacheKey, static::DDL_INDEX);
+        $ddl = $this->loadDdlCache($cacheKey, self::DDL_INDEX);
         if ($ddl === false) {
             $ddl = array();
 
@@ -698,7 +723,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
 
                 $upperKeyName = strtoupper($row[$fieldKeyName]);
                 if (isset($ddl[$upperKeyName])) {
-                    $ddl[$upperKeyName]['fields'][] = $row[$fieldColumn]; 
+                    $ddl[$upperKeyName]['fields'][] = $row[$fieldColumn]; // for compatible
                     $ddl[$upperKeyName]['COLUMNS_LIST'][] = $row[$fieldColumn];
                 } else {
                     $ddl[$upperKeyName] = array(
@@ -708,12 +733,12 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                         'COLUMNS_LIST'  => array($row[$fieldColumn]),
                         'INDEX_TYPE'    => $indexType,
                         'INDEX_METHOD'  => $row[$fieldIndexType],
-                        'type'          => strtolower($indexType), 
-                        'fields'        => array($row[$fieldColumn]) 
+                        'type'          => strtolower($indexType), // for compatibility
+                        'fields'        => array($row[$fieldColumn]) // for compatibility
                     );
                 }
             }
-            $this->saveDdlCache($cacheKey, static::DDL_INDEX, $ddl);
+            $this->saveDdlCache($cacheKey, self::DDL_INDEX, $ddl);
         }
 
         return $ddl;
@@ -734,7 +759,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      *
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    protected function _debugTimer() {
+    protected function _debugTimer()
+    {
         if ($this->_debug) {
             $this->_debugTimer = microtime(true);
         }
@@ -751,7 +777,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param Zend_Db_Statement_Pdo $result
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    protected function _debugStat($type, $sql, $bind = array(), $result = null) {
+    protected function _debugStat($type, $sql, $bind = array(), $result = null)
+    {
         if (!$this->_debug) {
             return $this;
         }
@@ -764,13 +791,13 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
             return $this;
         }
         switch ($type) {
-            case static::DEBUG_CONNECT:
+            case self::DEBUG_CONNECT:
                 $code .= 'CONNECT' . $nl;
                 break;
-            case static::DEBUG_TRANSACTION:
+            case self::DEBUG_TRANSACTION:
                 $code .= 'TRANSACTION ' . $sql . $nl;
                 break;
-            case static::DEBUG_QUERY:
+            case self::DEBUG_QUERY:
                 $code .= 'QUERY' . $nl;
                 $code .= 'SQL: ' . $sql . $nl;
                 if ($bind) {
@@ -803,7 +830,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param int $ddlType          the DDL constant
      * @return string|array|int|false
      */
-    public function loadDdlCache($tableCacheKey, $ddlType) {
+    public function loadDdlCache($tableCacheKey, $ddlType)
+    {
         if (!$this->_isDdlCacheAllowed) {
             return false;
         }
@@ -831,7 +859,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param int $ddlType
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function saveDdlCache($tableCacheKey, $ddlType, $data) {
+    public function saveDdlCache($tableCacheKey, $ddlType, $data)
+    {
         if (!$this->_isDdlCacheAllowed) {
             return $this;
         }
@@ -840,7 +869,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
         if ($this->_cacheAdapter instanceof Zend_Cache_Core) {
             $cacheId = $this->_getCacheId($tableCacheKey, $ddlType);
             $data = serialize($data);
-            $this->_cacheAdapter->save($data, $cacheId, array(static::DDL_CACHE_TAG));
+            $this->_cacheAdapter->save($data, $cacheId, array(self::DDL_CACHE_TAG));
         }
 
         return $this;
@@ -854,19 +883,20 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName OPTIONAL
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function resetDdlCache($tableName = null, $schemaName = null) {
+    public function resetDdlCache($tableName = null, $schemaName = null)
+    {
         if (!$this->_isDdlCacheAllowed) {
             return $this;
         }
         if ($tableName === null) {
             $this->_ddlCache = array();
             if ($this->_cacheAdapter instanceof Zend_Cache_Core) {
-                $this->_cacheAdapter->clean(Zend_Cache::CLEANING_MODE_MATCHING_TAG, array(static::DDL_CACHE_TAG));
+                $this->_cacheAdapter->clean(Zend_Cache::CLEANING_MODE_MATCHING_TAG, array(self::DDL_CACHE_TAG));
             }
         } else {
             $cacheKey = $this->_getTableName($tableName, $schemaName);
 
-            $ddlTypes = array(static::DDL_DESCRIBE, static::DDL_CREATE, static::DDL_INDEX, static::DDL_FOREIGN_KEY);
+            $ddlTypes = array(self::DDL_DESCRIBE, self::DDL_CREATE, self::DDL_INDEX, self::DDL_FOREIGN_KEY);
             foreach ($ddlTypes as $ddlType) {
                 unset($this->_ddlCache[$ddlType][$cacheKey]);
             }
@@ -886,7 +916,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * Disallow DDL caching
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function disallowDdlCache() {
+    public function disallowDdlCache()
+    {
         $this->_isDdlCacheAllowed = false;
         return $this;
     }
@@ -895,7 +926,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * Allow DDL caching
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function allowDdlCache() {
+    public function allowDdlCache()
+    {
         $this->_isDdlCacheAllowed = true;
         return $this;
     }
@@ -912,7 +944,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param $newTableName
      * @return Varien_Db_Ddl_Table
      */
-    public function createTableByDdl($tableName, $newTableName) {
+    public function createTableByDdl($tableName, $newTableName)
+    {
         $describe = $this->describeTable($tableName);
         $table = $this->newTable($newTableName)
             ->setComment(uc_words($newTableName, ' '));
@@ -949,13 +982,13 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
         $foreignKeys = $this->getForeignKeys($tableName);
         foreach ($foreignKeys as $keyData) {
             $fkName = $this->getForeignKeyName(
-                $newTableName, $keyData[$columname], $keyData['REF_TABLE_NAME'], $keyData['REF_COLUMN_NAME']
+                $newTableName, $keyData['COLUMN_NAME'], $keyData['REF_TABLE_NAME'], $keyData['REF_COLUMN_NAME']
             );
             $onDelete = $this->_getDdlAction($keyData['ON_DELETE']);
             $onUpdate = $this->_getDdlAction($keyData['ON_UPDATE']);
 
             $table->addForeignKey(
-                $fkName, $keyData[$columname], $keyData['REF_TABLE_NAME'],
+                $fkName, $keyData['COLUMN_NAME'], $keyData['REF_TABLE_NAME'],
                 $keyData['REF_COLUMN_NAME'], $onDelete, $onUpdate
             );
         }
@@ -977,7 +1010,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function modifyColumnByDdl($tableName, $columnName, $definition, $flushData = false, $schemaName = null) {
+    public function modifyColumnByDdl($tableName, $columnName, $definition, $flushData = false, $schemaName = null)
+    {
         $definition = array_change_key_case($definition, CASE_UPPER);
         $definition['COLUMN_TYPE'] = $this->_getColumnTypeByDdl($definition);
         if (array_key_exists('DEFAULT', $definition) && is_null($definition['DEFAULT'])) {
@@ -997,7 +1031,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function truncate($tableName, $schemaName = null) {
+    public function truncate($tableName, $schemaName = null)
+    {
         return $this->truncateTable($tableName, $schemaName);
     }
 
@@ -1015,7 +1050,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param null|string $schemaName
      * @return Zend_Db_Statement_Interface
      */
-    public function changeTableAutoIncrement($tableName, $increment, $schemaName = null) {
+    public function changeTableAutoIncrement($tableName, $increment, $schemaName = null)
+    {
         $table = $this->quoteIdentifier($this->_getTableName($tableName, $schemaName));
         $sql = sprintf('ALTER TABLE %s AUTO_INCREMENT=%d', $table, $increment);
         return $this->raw_query($sql);
@@ -1029,7 +1065,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param array $bind
      * @return int The number of affected rows.
      */
-    public function insertForce($table, array $bind) {
+    public function insertForce($table, array $bind)
+    {
         $this->raw_query("SET @OLD_INSERT_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO'");
         $result = $this->insert($table, $bind);
         $this->raw_query("SET SQL_MODE=IFNULL(@OLD_INSERT_SQL_MODE,'')");
@@ -1046,13 +1083,14 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return int The number of affected rows.
      * @throws Zend_Db_Exception
      */
-    public function insertOnDuplicate($table, array $data, array $fields = array()) {
+    public function insertOnDuplicate($table, array $data, array $fields = array())
+    {
         // extract and quote col names from the array keys
-        $row    = reset($data); 
-        $bind   = array(); 
+        $row    = reset($data); // get first element from data array
+        $bind   = array(); // SQL bind array
         $values = array();
 
-        if (is_array($row)) { 
+        if (is_array($row)) { // Array of column-value pairs
             $cols = array_keys($row);
             foreach ($data as $row) {
                 if (array_diff($cols, array_keys($row))) {
@@ -1061,7 +1099,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                 $values[] = $this->_prepareInsertData($row, $bind);
             }
             unset($row);
-        } else { 
+        } else { // Column-value pairs
             $cols     = array_keys($data);
             $values[] = $this->_prepareInsertData($data, $bind);
         }
@@ -1115,7 +1153,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return int The number of affected rows.
      * @throws Zend_Db_Exception
      */
-    public function insertMultiple($table, array $data) {
+    public function insertMultiple($table, array $data)
+    {
         $row = reset($data);
         // support insert syntaxes
         if (!is_array($row)) {
@@ -1149,7 +1188,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return  int
      * @throws  Zend_Db_Exception
      */
-    public function insertArray($table, array $columns, array $data) {
+    public function insertArray($table, array $columns, array $data)
+    {
         $values       = array();
         $bind         = array();
         $columnsCount = count($columns);
@@ -1177,7 +1217,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return int The number of affected rows.
      * @throws Zend_Db_Adapter_Exception
      */
-    public function insertIgnore($table, array $bind) {
+    public function insertIgnore($table, array $bind)
+    {
         // extract and quote col names from the array keys
         $cols = array();
         $vals = array();
@@ -1228,7 +1269,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param Zend_Cache_Backend_Interface $adapter
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function setCacheAdapter($adapter) {
+    public function setCacheAdapter($adapter)
+    {
         $this->_cacheAdapter = $adapter;
         return $this;
     }
@@ -1240,7 +1282,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName the database/schema name
      * @return Varien_Db_Ddl_Table
      */
-    public function newTable($tableName = null, $schemaName = null) {
+    public function newTable($tableName = null, $schemaName = null)
+    {
         $table = new Varien_Db_Ddl_Table();
         if ($tableName !== null) {
             $table->setName($tableName);
@@ -1259,7 +1302,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @throws Zend_Db_Exception
      * @return Zend_Db_Pdo_Statement
      */
-    public function createTable(Varien_Db_Ddl_Table $table) {
+    public function createTable(Varien_Db_Ddl_Table $table)
+    {
         $columns = $table->getColumns();
         foreach ($columns as $columnEntry) {
             if (empty($columnEntry['COMMENT'])) {
@@ -1288,7 +1332,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @throws Zend_Db_Exception
      * @return Zend_Db_Pdo_Statement
      */
-    public function createTemporaryTable(Varien_Db_Ddl_Table $table) {
+    public function createTemporaryTable(Varien_Db_Ddl_Table $table)
+    {
         $sqlFragment    = array_merge(
             $this->_getColumnsDefinition($table),
             $this->_getIndexesDefinition($table),
@@ -1310,7 +1355,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return array
      * @throws Zend_Db_Exception
      */
-    protected function _getColumnsDefinition(Varien_Db_Ddl_Table $table) {
+    protected function _getColumnsDefinition(Varien_Db_Ddl_Table $table)
+    {
         $definition = array();
         $primary    = array();
         $columns    = $table->getColumns();
@@ -1321,11 +1367,11 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
         foreach ($columns as $columnData) {
             $columnDefinition = $this->_getColumnDefinition($columnData);
             if ($columnData['PRIMARY']) {
-                $primary[$columnData[$columname]] = $columnData['PRIMARY_POSITION'];
+                $primary[$columnData['COLUMN_NAME']] = $columnData['PRIMARY_POSITION'];
             }
 
             $definition[] = sprintf('  %s %s',
-                $this->quoteIdentifier($columnData[$columname]),
+                $this->quoteIdentifier($columnData['COLUMN_NAME']),
                 $columnDefinition
             );
         }
@@ -1346,7 +1392,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param Varien_Db_Ddl_Table $table
      * @return array
      */
-    protected function _getIndexesDefinition(Varien_Db_Ddl_Table $table) {
+    protected function _getIndexesDefinition(Varien_Db_Ddl_Table $table)
+    {
         $definition = array();
         $indexes    = $table->getIndexes();
         if (!empty($indexes)) {
@@ -1391,7 +1438,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param Varien_Db_Ddl_Table $table
      * @return array
      */
-    protected function _getForeignKeysDefinition(Varien_Db_Ddl_Table $table) {
+    protected function _getForeignKeysDefinition(Varien_Db_Ddl_Table $table)
+    {
         $definition = array();
         $relations  = $table->getForeignKeys();
 
@@ -1402,7 +1450,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
 
                 $definition[] = sprintf('  CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s) ON DELETE %s ON UPDATE %s',
                     $this->quoteIdentifier($fkData['FK_NAME']),
-                    $this->quoteIdentifier($fkData[$columname]),
+                    $this->quoteIdentifier($fkData['COLUMN_NAME']),
                     $this->quoteIdentifier($fkData['REF_TABLE_NAME']),
                     $this->quoteIdentifier($fkData['REF_COLUMN_NAME']),
                     $onDelete,
@@ -1421,7 +1469,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return array
      * @throws Zend_Db_Exception
      */
-    protected function _getOptionsDefinition(Varien_Db_Ddl_Table $table) {
+    protected function _getOptionsDefinition(Varien_Db_Ddl_Table $table)
+    {
         $definition = array();
         $comment    = $table->getComment();
         if (empty($comment)) {
@@ -1458,7 +1507,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param  null|string $ddlType
      * @return string
      */
-    public function getColumnDefinitionFromDescribe($options, $ddlType = null) {
+    public function getColumnDefinitionFromDescribe($options, $ddlType = null)
+    {
         $columnInfo = $this->getColumnCreateByDescribe($options);
         foreach ($columnInfo['options'] as $key => $value) {
             $columnInfo[$key] = $value;
@@ -1475,7 +1525,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return string
      * @throws Zend_Db_Exception
      */
-    protected function _getColumnDefinition($options, $ddlType = null) {
+    protected function _getColumnDefinition($options, $ddlType = null)
+    {
         // convert keys to uppercase
         $options    = array_change_key_case($options, CASE_UPPER);
         $cType      = null;
@@ -1540,9 +1591,6 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                     $cType = $ddlType == Varien_Db_Ddl_Table::TYPE_TEXT ? 'longtext' : 'longblob';
                 }
                 break;
-                default: 
-                	error();
-                	break;
         }
 
         if (array_key_exists('DEFAULT', $options)) {
@@ -1612,7 +1660,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return boolean
      */
-    public function dropTable($tableName, $schemaName = null) {
+    public function dropTable($tableName, $schemaName = null)
+    {
         $table = $this->quoteIdentifier($this->_getTableName($tableName, $schemaName));
         $query = 'DROP TABLE IF EXISTS ' . $table;
         $this->query($query);
@@ -1627,7 +1676,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return boolean
      */
-    public function dropTemporaryTable($tableName, $schemaName = null) {
+    public function dropTemporaryTable($tableName, $schemaName = null)
+    {
         $table = $this->quoteIdentifier($this->_getTableName($tableName, $schemaName));
         $query = 'DROP TEMPORARY TABLE IF EXISTS ' . $table;
         $this->query($query);
@@ -1643,7 +1693,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return Varien_Db_Adapter_Pdo_Mysql
      * @throws Zend_Db_Exception
      */
-    public function truncateTable($tableName, $schemaName = null) {
+    public function truncateTable($tableName, $schemaName = null)
+    {
         if (!$this->isTableExists($tableName, $schemaName)) {
             throw new Zend_Db_Exception(sprintf('Table "%s" is not exists', $tableName));
         }
@@ -1662,7 +1713,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return boolean
      */
-    public function isTableExists($tableName, $schemaName = null) {
+    public function isTableExists($tableName, $schemaName = null)
+    {
         return $this->showTableStatus($tableName, $schemaName) !== false;
     }
 
@@ -1675,7 +1727,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return boolean
      * @throws Zend_Db_Exception
      */
-    public function renameTable($oldTableName, $newTableName, $schemaName = null) {
+    public function renameTable($oldTableName, $newTableName, $schemaName = null)
+    {
         if (!$this->isTableExists($oldTableName, $schemaName)) {
             throw new Zend_Db_Exception(sprintf('Table "%s" is not exists', $oldTableName));
         }
@@ -1702,7 +1755,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return boolean
      * @throws Zend_Db_Exception
      */
-    public function renameTablesBatch(array $tablePairs) {
+    public function renameTablesBatch(array $tablePairs)
+    {
         if (count($tablePairs) == 0) {
             throw new Zend_Db_Exception('Please provide tables for rename');
         }
@@ -1741,7 +1795,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @throws Zend_Db_Exception|Exception
      */
     public function addIndex($tableName, $indexName, $fields,
-        $indexType = Varien_Db_Adapter_Interface::INDEX_TYPE_INDEX, $schemaName = null) {
+        $indexType = Varien_Db_Adapter_Interface::INDEX_TYPE_INDEX, $schemaName = null)
+    {
         $columns = $this->describeTable($tableName, $schemaName);
         $keyList = $this->getIndexList($tableName, $schemaName);
 
@@ -1817,7 +1872,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return bool|Zend_Db_Statement_Interface
      */
-    public function dropIndex($tableName, $keyName, $schemaName = null) {
+    public function dropIndex($tableName, $keyName, $schemaName = null)
+    {
         $indexList = $this->getIndexList($tableName, $schemaName);
         $keyName = strtoupper($keyName);
         if (!isset($indexList[$keyName])) {
@@ -1857,7 +1913,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
     public function addForeignKey($fkName, $tableName, $columnName, $refTableName, $refColumnName,
         $onDelete = Varien_Db_Adapter_Interface::FK_ACTION_CASCADE,
         $onUpdate = Varien_Db_Adapter_Interface::FK_ACTION_CASCADE,
-        $purge = false, $schemaName = null, $refSchemaName = null) {
+        $purge = false, $schemaName = null, $refSchemaName = null)
+    {
         $this->dropForeignKey($tableName, $fkName, $schemaName);
 
         if ($purge) {
@@ -1891,7 +1948,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param boolean $includeTime
      * @return Zend_Db_Expr
      */
-    public function formatDate($date, $includeTime = true) {
+    public function formatDate($date, $includeTime = true)
+    {
         $date = Varien_Date::formatDate($date, $includeTime);
 
         if ($date === null) {
@@ -1906,7 +1964,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      *
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function startSetup() {
+    public function startSetup()
+    {
         $this->raw_query("SET SQL_MODE=''");
         $this->raw_query("SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0");
         $this->raw_query("SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO'");
@@ -1919,7 +1978,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      *
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function endSetup() {
+    public function endSetup()
+    {
         $this->raw_query("SET SQL_MODE=IFNULL(@OLD_SQL_MODE,'')");
         $this->raw_query("SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS=0, 0, 1)");
 
@@ -1956,7 +2016,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param integer|string|array $condition
      * @return string
      */
-    public function prepareSqlCondition($fieldName, $condition) {
+    public function prepareSqlCondition($fieldName, $condition)
+    {
         $conditionKeyMap = array(
             'eq'            => "{{fieldName}} = ?",
             'neq'           => "{{fieldName}} != ?",
@@ -2028,7 +2089,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return string
      */
   
-    protected function _transformStringSqlCondition($conditionKey, $value) {
+    protected function _transformStringSqlCondition($conditionKey, $value)
+    {
         $value = (string) $value;
         if ($value == '') {
             return ($conditionKey == 'seq') ? 'null' : 'notnull';
@@ -2045,7 +2107,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param mixed $value
      * @return mixed
      */
-    public function prepareColumnValue(array $column, $value) {
+    public function prepareColumnValue(array $column, $value)
+    {
         if ($value instanceof Zend_Db_Expr) {
             return $value;
         }
@@ -2074,7 +2137,7 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                 }
                 break;
 
-            case $decimal:
+            case 'decimal':
                 $precision  = 10;
                 $scale      = 0;
                 if (isset($column['SCALE'])) {
@@ -2127,7 +2190,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $true  true value
      * @param string $false false value
      */
-    public function getCheckSql($expression, $true, $false) {
+    public function getCheckSql($expression, $true, $false)
+    {
         if ($expression instanceof Zend_Db_Expr || $expression instanceof Zend_Db_Select) {
             $expression = sprintf("IF((%s), %s, %s)", $expression, $true, $false);
         } else {
@@ -2144,7 +2208,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $value OPTIONAL. Applies when $expression is NULL
      * @return Zend_Db_Expr
      */
-    public function getIfNullSql($expression, $value = 0) {
+    public function getIfNullSql($expression, $value = 0)
+    {
         if ($expression instanceof Zend_Db_Expr || $expression instanceof Zend_Db_Select) {
             $expression = sprintf("IFNULL((%s), %s)", $expression, $value);
         } else {
@@ -2164,7 +2229,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      *
      * @return Zend_Db_Expr
      */
-    public function getCaseSql($valueName, $casesResults, $defaultValue = null) {
+    public function getCaseSql($valueName, $casesResults, $defaultValue = null)
+    {
         $expression = 'CASE ' . $valueName;
         foreach ($casesResults as $case => $result) {
             $expression .= ' WHEN ' . $case . ' THEN ' . $result;
@@ -2185,7 +2251,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $separator concatenate with separator
      * @return Zend_Db_Expr
      */
-    public function getConcatSql(array $data, $separator = null) {
+    public function getConcatSql(array $data, $separator = null)
+    {
         $format = empty($separator) ? 'CONCAT(%s)' : "CONCAT_WS('{$separator}', %s)";
         return new Zend_Db_Expr(sprintf($format, implode(', ', $data)));
     }
@@ -2197,7 +2264,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $string
      * @return Zend_Db_Expr
      */
-    public function getLengthSql($string) {
+    public function getLengthSql($string)
+    {
         return new Zend_Db_Expr(sprintf('LENGTH(%s)', $string));
     }
 
@@ -2209,7 +2277,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param array $data
      * @return Zend_Db_Expr
      */
-    public function getLeastSql(array $data) {
+    public function getLeastSql(array $data)
+    {
         return new Zend_Db_Expr(sprintf('LEAST(%s)', implode(', ', $data)));
     }
 
@@ -2221,7 +2290,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param array $data
      * @return Zend_Db_Expr
      */
-    public function getGreatestSql(array $data) {
+    public function getGreatestSql(array $data)
+    {
         return new Zend_Db_Expr(sprintf('GREATEST(%s)', implode(', ', $data)));
     }
 
@@ -2236,7 +2306,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $unit
      * @return Zend_Db_Expr
      */
-    public function getDateAddSql($date, $interval, $unit) {
+    public function getDateAddSql($date, $interval, $unit)
+    {
         $expr = sprintf('DATE_ADD(%s, %s)', $date, $this->_getIntervalUnitSql($interval, $unit));
         return new Zend_Db_Expr($expr);
     }
@@ -2251,7 +2322,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $unit
      * @return Zend_Db_Expr
      */
-    public function getDateSubSql($date, $interval, $unit) {
+    public function getDateSubSql($date, $interval, $unit)
+    {
         $expr = sprintf('DATE_SUB(%s, %s)', $date, $this->_getIntervalUnitSql($interval, $unit));
         return new Zend_Db_Expr($expr);
     }
@@ -2272,7 +2344,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $format
      * @return Zend_Db_Expr
      */
-    public function getDateFormatSql($date, $format) {
+    public function getDateFormatSql($date, $format)
+    {
         $expr = sprintf("DATE_FORMAT(%s, '%s')", $date, $format);
         return new Zend_Db_Expr($expr);
     }
@@ -2283,7 +2356,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param Zend_Db_Expr|string $date   quoted field name or SQL statement
      * @return Zend_Db_Expr
      */
-    public function getDatePartSql($date) {
+    public function getDatePartSql($date)
+    {
         return new Zend_Db_Expr(sprintf('DATE(%s)', $date));
     }
 
@@ -2295,7 +2369,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param int|string|Zend_Db_Expr|null $len
      * @return Zend_Db_Expr
      */
-    public function getSubstringSql($stringExpression, $pos, $len = null) {
+    public function getSubstringSql($stringExpression, $pos, $len = null)
+    {
         if (is_null($len)) {
             return new Zend_Db_Expr(sprintf('SUBSTRING(%s, %s)', $stringExpression, $pos));
         }
@@ -2308,7 +2383,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param Zend_Db_Expr|string $expressionField   quoted field name or SQL statement
      * @return Zend_Db_Expr
      */
-    public function getStandardDeviationSql($expressionField) {
+    public function getStandardDeviationSql($expressionField)
+    {
         return new Zend_Db_Expr(sprintf('STDDEV_SAMP(%s)', $expressionField));
     }
 
@@ -2322,7 +2398,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return Zend_Db_Expr
      * @throws Zend_Db_Exception
      */
-    public function getDateExtractSql($date, $unit) {
+    public function getDateExtractSql($date, $unit)
+    {
         if (!isset($this->_intervalUnits[$unit])) {
             throw new Zend_Db_Exception(sprintf('Undefined interval unit "%s" specified', $unit));
         }
@@ -2339,7 +2416,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param  $maxCharacters
      * @return string
      */
-     protected function _minusSuperfluous($hash, $prefix, $maxCharacters) {
+     protected function _minusSuperfluous($hash, $prefix, $maxCharacters)
+     {
          $diff        = strlen($hash) + strlen($prefix) -  $maxCharacters;
          $superfluous = $diff / 2;
          $odd         = $diff % 2;
@@ -2354,14 +2432,15 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $tableName
      * @return string
      */
-    public function getTableName($tableName) {
+    public function getTableName($tableName)
+    {
         $prefix = 't_';
-        if (strlen($tableName) > static::LENGTH_TABLE_NAME) {
+        if (strlen($tableName) > self::LENGTH_TABLE_NAME) {
             $shortName = Varien_Db_Helper::shortName($tableName);
-            if (strlen($shortName) > static::LENGTH_TABLE_NAME) {
+            if (strlen($shortName) > self::LENGTH_TABLE_NAME) {
                 $hash = md5($tableName);
-                if (strlen($prefix.$hash) > static::LENGTH_TABLE_NAME) {
-                    $tableName = $this->_minusSuperfluous($hash, $prefix, static::LENGTH_TABLE_NAME);
+                if (strlen($prefix.$hash) > self::LENGTH_TABLE_NAME) {
+                    $tableName = $this->_minusSuperfluous($hash, $prefix, self::LENGTH_TABLE_NAME);
                 } else {
                     $tableName = $prefix . $hash;
                 }
@@ -2382,7 +2461,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $indexType
      * @return string
      */
-    public function getIndexName($tableName, $fields, $indexType = '') {
+    public function getIndexName($tableName, $fields, $indexType = '')
+    {
         if (is_array($fields)) {
             $fields = implode('_', $fields);
         }
@@ -2404,12 +2484,12 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
 
         $hash = $tableName . '_' . $fields;
 
-        if (strlen($hash) + strlen($prefix) > static::LENGTH_INDEX_NAME) {
+        if (strlen($hash) + strlen($prefix) > self::LENGTH_INDEX_NAME) {
             $short = Varien_Db_Helper::shortName($prefix . $hash);
-            if (strlen($short) > static::LENGTH_INDEX_NAME) {
+            if (strlen($short) > self::LENGTH_INDEX_NAME) {
                 $hash = md5($hash);
-                if (strlen($hash) + strlen($shortPrefix) > static::LENGTH_INDEX_NAME) {
-                    $hash = $this->_minusSuperfluous($hash, $shortPrefix, static::LENGTH_INDEX_NAME);
+                if (strlen($hash) + strlen($shortPrefix) > self::LENGTH_INDEX_NAME) {
+                    $hash = $this->_minusSuperfluous($hash, $shortPrefix, self::LENGTH_INDEX_NAME);
                 }
             } else {
                 $hash = $short;
@@ -2431,15 +2511,16 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $refColumnName
      * @return string
      */
-    public function getForeignKeyName($priTableName, $priColumnName, $refTableName, $refColumnName) {
+    public function getForeignKeyName($priTableName, $priColumnName, $refTableName, $refColumnName)
+    {
         $prefix = 'fk_';
         $hash = sprintf('%s_%s_%s_%s', $priTableName, $priColumnName, $refTableName, $refColumnName);
-        if (strlen($prefix.$hash) > static::LENGTH_FOREIGN_NAME) {
+        if (strlen($prefix.$hash) > self::LENGTH_FOREIGN_NAME) {
             $short = Varien_Db_Helper::shortName($prefix.$hash);
-            if (strlen($short) > static::LENGTH_FOREIGN_NAME) {
+            if (strlen($short) > self::LENGTH_FOREIGN_NAME) {
                 $hash = md5($hash);
-                if (strlen($prefix.$hash) > static::LENGTH_FOREIGN_NAME) {
-                    $hash = $this->_minusSuperfluous($hash, $prefix, static::LENGTH_FOREIGN_NAME);
+                if (strlen($prefix.$hash) > self::LENGTH_FOREIGN_NAME) {
+                    $hash = $this->_minusSuperfluous($hash, $prefix, self::LENGTH_FOREIGN_NAME);
                 } else {
                     $hash = $prefix . $hash;
                 }
@@ -2460,7 +2541,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function disableTableKeys($tableName, $schemaName = null) {
+    public function disableTableKeys($tableName, $schemaName = null)
+    {
         $tableName = $this->_getTableName($tableName, $schemaName);
         $query     = sprintf('ALTER TABLE %s DISABLE KEYS', $this->quoteIdentifier($tableName));
         $this->query($query);
@@ -2475,7 +2557,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function enableTableKeys($tableName, $schemaName = null) {
+    public function enableTableKeys($tableName, $schemaName = null)
+    {
         $tableName = $this->_getTableName($tableName, $schemaName);
         $query     = sprintf('ALTER TABLE %s ENABLE KEYS', $this->quoteIdentifier($tableName));
         $this->query($query);
@@ -2492,9 +2575,10 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param bool|int $mode
      * @return string
      */
-    public function insertFromSelect(Varien_Db_Select $select, $table, array $fields = array(), $mode = false) {
+    public function insertFromSelect(Varien_Db_Select $select, $table, array $fields = array(), $mode = false)
+    {
         $query = 'INSERT';
-        if ($mode == static::INSERT_IGNORE) {
+        if ($mode == self::INSERT_IGNORE) {
             $query .= ' IGNORE';
         }
         $query = sprintf('%s INTO %s', $query, $this->quoteIdentifier($table));
@@ -2505,12 +2589,12 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
 
         $query = sprintf('%s %s', $query, $select->assemble());
 
-        if ($mode == static::INSERT_ON_DUPLICATE) {
+        if ($mode == self::INSERT_ON_DUPLICATE) {
             if (!$fields) {
                 $describe = $this->describeTable($table);
                 foreach ($describe as $column) {
                     if ($column['PRIMARY'] === false) {
-                        $fields[] = $column[$columname];
+                        $fields[] = $column['COLUMN_NAME'];
                     }
                 }
             }
@@ -2553,7 +2637,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @return array
      * @throws Varien_Db_Exception
      */
-    public function selectsByRange($rangeField, Varien_Db_Select $select, $stepCount = 100) {
+    public function selectsByRange($rangeField, Varien_Db_Select $select, $stepCount = 100)
+    {
         $queries = array();
         $fromSelect = $select->getPart(Varien_Db_Select::FROM);
         if (empty($fromSelect)) {
@@ -2605,7 +2690,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @throws Varien_Db_Exception
      * @return Zend_Db_Expr
      */
-    public function getUnixTimestamp($date) {
+    public function getUnixTimestamp($date)
+    {
         $expr = sprintf('UNIX_TIMESTAMP(%s)', $date);
         return new Zend_Db_Expr($expr);
     }
@@ -2616,7 +2702,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param int|Zend_Db_Expr $timestamp
      * @return mixed
      */
-    public function fromUnixtime($timestamp) {
+    public function fromUnixtime($timestamp)
+    {
         $expr = sprintf('FROM_UNIXTIME(%s)', $timestamp);
         return new Zend_Db_Expr($expr);
     }
@@ -2629,7 +2716,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @throws Varien_Db_Exception
      * @return string
      */
-    public function updateFromSelect(Varien_Db_Select $select, $table) {
+    public function updateFromSelect(Varien_Db_Select $select, $table)
+    {
         if (!is_array($table)) {
             $table = array($table => $table);
         }
@@ -2703,7 +2791,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $table the table name or alias used in select
      * @return string|int
      */
-    public function deleteFromSelect(Varien_Db_Select $select, $table) {
+    public function deleteFromSelect(Varien_Db_Select $select, $table)
+    {
         $select = clone $select;
         $select->reset(Zend_Db_Select::DISTINCT);
         $select->reset(Zend_Db_Select::COLUMNS);
@@ -2720,7 +2809,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName schema name
      * @return arrray
      */
-    public function getTablesChecksum($tableNames, $schemaName = null) {
+    public function getTablesChecksum($tableNames, $schemaName = null)
+    {
         $result     = array();
         $tableNames = is_array($tableNames) ? $tableNames : array($tableNames);
 
@@ -2738,7 +2828,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      *
      * @return boolean
      */
-    public function supportStraightJoin() {
+    public function supportStraightJoin()
+    {
         return true;
     }
 
@@ -2750,7 +2841,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $field
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function orderRand(Varien_Db_Select $select, $field = null) {
+    public function orderRand(Varien_Db_Select $select, $field = null)
+    {
         if ($field !== null) {
             $expression = new Zend_Db_Expr(sprintf('RAND() * %s', $this->quoteIdentifier($field)));
             $select->columns(array('mage_rand' => $expression));
@@ -2769,7 +2861,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $sql
      * @return string
      */
-    public function forUpdate($sql) {
+    public function forUpdate($sql)
+    {
         return sprintf('%s FOR UPDATE', $sql);
     }
     /**
@@ -2779,7 +2872,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $schemaName OPTIONAL
      * @return string Primary Key name
      */
-    public function getPrimaryKeyName($tableName, $schemaName = null) {
+    public function getPrimaryKeyName($tableName, $schemaName = null)
+    {
         $indexes = $this->getIndexList($tableName, $schemaName);
         if (isset($indexes['PRIMARY'])) {
             return $indexes['PRIMARY']['KEY_NAME'];
@@ -2795,7 +2889,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @mixed $value
      * @return mixed
      */
-    public function decodeVarbinary($value) {
+    public function decodeVarbinary($value)
+    {
         return $value;
     }
 
@@ -2809,11 +2904,13 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @deprecated after 1.5.1.0
      * @return string
      */
-    public function getSuggestedZeroDate() {
+    public function getSuggestedZeroDate()
+    {
         return '0000-00-00 00:00:00';
     }
     
-    protected function _prepareInsertData($row, &$bind) {
+    protected function _prepareInsertData($row, &$bind)
+    {
     	if (is_array($row)) {
     		$line = array();
     		foreach ($row as $value) {
@@ -2834,7 +2931,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
     
     	return sprintf('(%s)', $line);
     }
-    protected function _getInsertSqlQuery($tableName, array $columns, array $values) {
+    protected function _getInsertSqlQuery($tableName, array $columns, array $values)
+    {
     	$tableName = $this->quoteIdentifier($tableName, true);
     	$columns   = array_map(array($this, 'quoteIdentifier'), $columns);
     	$columns   = implode(',', $columns);
@@ -2851,7 +2949,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param string $triggerName
      * @return Varien_Db_Adapter_Interface
      */
-    public function dropTrigger($triggerName) {
+    public function dropTrigger($triggerName)
+    {
         $query = sprintf(
             'DROP TRIGGER IF EXISTS %s',
             $this->_getTableName($triggerName)
@@ -2868,7 +2967,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      * @param bool $temporary
      * @return mixed
      */
-    public function createTableFromSelect($tableName, Zend_Db_Select $select, $temporary = false) {
+    public function createTableFromSelect($tableName, Zend_Db_Select $select, $temporary = false)
+    {
         $query = sprintf(
             'CREATE' . ($temporary ? ' TEMPORARY' : '') . ' TABLE `%s` AS (%s)',
             $this->_getTableName($tableName),
