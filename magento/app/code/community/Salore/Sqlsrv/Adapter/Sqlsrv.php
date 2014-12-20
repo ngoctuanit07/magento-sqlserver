@@ -46,7 +46,7 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract {
 			//execute the statement
 			$stmt = sqlsrv_query( $connection, $sql, $param);
 			if( $stmt === false ) {
-				die( print_r( sqlsrv_errors() , true ));
+				 print_r( sqlsrv_errors() , true );
 				sqlsrv_rollback( $connection );
 			}
 			else {
