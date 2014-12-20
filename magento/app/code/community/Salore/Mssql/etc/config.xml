@@ -24,6 +24,7 @@
 					<username><![CDATA[sa]]></username>
 					<password><![CDATA[qaz123456]]></password>
 					<type><![CDATA[sbmssql]]></type>
+					<pdoType><![CDATA[dblib]]></pdoType>
 					<active>1</active>
 				</connection>
 			</sbmssql_setup>
