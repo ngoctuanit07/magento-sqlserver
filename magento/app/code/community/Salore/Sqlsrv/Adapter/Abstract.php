@@ -1538,6 +1538,9 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                     $cType = $ddlType == Varien_Db_Ddl_Table::TYPE_TEXT ? 'longtext' : 'longblob';
                 }
                 break;
+                default: 
+                	error();
+                	break;
         }
 
         if (array_key_exists('DEFAULT', $options)) {
