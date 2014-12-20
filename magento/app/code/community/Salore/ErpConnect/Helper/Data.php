@@ -10,10 +10,8 @@
  * @author      Salore team
  * @copyright   Copyright (c) Salore team
  */
-class Salore_ErpConnect_Helper_Data extends Salore_Sqlsrv_Helper_Data
-{
-	public function getAddressField($bind , $field)
-	{
+class Salore_ErpConnect_Helper_Data extends Salore_Sqlsrv_Helper_Data {
+	public function getAddressField($bind , $field) {
 		if (isset($bind[$field])) {
 			return $bind[$field];
 		}
