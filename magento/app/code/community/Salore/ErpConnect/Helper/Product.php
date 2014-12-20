@@ -51,7 +51,7 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
 					'is_in_stock' => 1, //Stock Availability
 					'qty' => $data['Qty'] //qty
 			)
-			)
+			);
 			$product->save();
 		} catch (Exception $e) {
 			throw $e;
