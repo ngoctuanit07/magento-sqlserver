@@ -161,6 +161,7 @@ class Salore_ErpConnect_Model_Observer
 		$orderItem = $order->getAllItems();
 		foreach ($orderItem as $item)
 		{
+			
 			$dataOrderDetail['ItemCode'] = $item->getItemId();
 		}
 		$dataOrderDetail['QuantityOrdered'] = (int)($order->getQtyOrdered());

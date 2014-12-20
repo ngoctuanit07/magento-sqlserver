@@ -16,6 +16,15 @@
                     </sberpconnect>
                 </observers>
 			</sales_order_place_after>
+			<sales_order_load_after>
+				<observers>
+                    <sberpconnect>
+                        <type>singleton</type>
+                        <class>Salore_ErpConnect_Model_Observer</class>
+                        <method>getOrderAfterSaveInAdmin</method>
+                    </sberpconnect>
+                </observers>
+			</sales_order_load_after>
         </events>
         <models>
 			<sberpconnect>
