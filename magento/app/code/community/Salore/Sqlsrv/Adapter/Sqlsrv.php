@@ -49,13 +49,11 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract {
 				 print_r( sqlsrv_errors() , true );
 				sqlsrv_rollback( $connection );
 			}
-			else
-			{
+			else {
 				sqlsrv_commit( $connection );
 				sqlsrv_free_stmt( $stmt);
 			}
-		}else{
-			echo "Connection could not be established.<br />";
+		}else {
 			 print_r( sqlsrv_errors() , true );
 		}
 	}
@@ -126,7 +124,6 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract {
 			}
 		}
 		else {
-			echo "Connection could not be established.<br />";
 			 print_r( sqlsrv_errors() , true );
 		}
 	}
@@ -159,15 +156,12 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract {
 				 print_r( sqlsrv_errors() , true );
 				sqlsrv_rollback( $connection );
 			}
-			else
-			{
+			else {
 				sqlsrv_commit( $connection );
 			}
 		}
-		else{
-			echo "Connection could not be established.<br />";
+		else {
 			 print_r( sqlsrv_errors() , true );
-	
 		}
 	
 	}
