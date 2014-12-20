@@ -10,10 +10,8 @@
  * @author      Salore team
  * @copyright   Copyright (c) Salore team
  */
-class Salore_Sqlsrv_Helper_Data extends Mage_Core_Helper_Abstract
-{
-	public function getConnection()
-	{
+class Salore_Sqlsrv_Helper_Data extends Mage_Core_Helper_Abstract {
+	public function getConnection() {
 		return Mage::getModel('core/resource')->getConnection('sbsqlsrv_write');
 	}
 }
