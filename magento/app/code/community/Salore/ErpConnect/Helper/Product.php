@@ -24,7 +24,7 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
 		}  
 	}
 	public function createProduct($data) {
-		$product = Mage::geModel('catalog/product');
+		$product = Mage::getModel('catalog/product');
 		$product->setData('sku' , $data['SKU']);
 		$product->setData('name' , $data['SKU_Name']);
 		$product->setData('short_description' , $data['ShortDesc']);
