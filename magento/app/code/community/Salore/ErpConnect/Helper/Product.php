@@ -28,7 +28,7 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
 		try {
 			$product
 			->setWebsiteIds(array(1)) //website ID the product is assigned to, as an array
-			->setAttributeSetId(9) //ID of a attribute set named 'default'
+			->setAttributeSetId(4) //ID of a attribute set named 'default'
 			->setTypeId('simple') //product type
 			->setCreatedAt(strtotime('now')) //product creation time
 			->setSku($data['SKU']) //SKU
