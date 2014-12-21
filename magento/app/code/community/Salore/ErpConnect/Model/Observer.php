@@ -131,7 +131,7 @@ class Salore_ErpConnect_Model_Observer {
             $dataShippingItem ['ShipCarrier'] = $shippingmethod;
         }
     }
-    public function getOrderAfterSaveInAdmin($observer) {
+ public function getOrderAfterSaveInAdmin($observer) {
         $order = $observer->getEvent ()->getOrder ();
         $db = $this->_helper->getConnection ();
         $insertData = array ();
@@ -197,7 +197,7 @@ class Salore_ErpConnect_Model_Observer {
     		$dataShipingTracking ['ShipDate'] = $shipment->getCreatedAt ();
     		$dataShippingItem ['ShipDate'] = $shipment->getCreatedAt ();
     	}
-    
+    	 
     }
     static public function dailyCatalogUpdate() {
         $currentTimestamp = Mage::getModel ( 'core/date' )->timestamp ( time () );
