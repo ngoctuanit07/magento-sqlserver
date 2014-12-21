@@ -169,14 +169,19 @@ class Salore_Mssql_Adapter_Abstract extends Zend_Db_Adapter_Pdo_Mssql implements
      *
      * @var array
      */
-    protected $_intervalUnits = array (
-            static::INTERVAL_YEAR => 'YEAR',
-            static::INTERVAL_MONTH => 'MONTH',
-            static::INTERVAL_DAY => 'DAY',
-            static::INTERVAL_HOUR => 'HOUR',
-            static::INTERVAL_MINUTE => 'MINUTE',
-            static::INTERVAL_SECOND => 'SECOND' 
-    );
+    protected $_intervalUnits = array ();
+    public function __construct()
+    {
+    	 $this->_intervalUnits = array (
+    			static::INTERVAL_YEAR => 'YEAR',
+    			static::INTERVAL_MONTH => 'MONTH',
+    			static::INTERVAL_DAY => 'DAY',
+    			static::INTERVAL_HOUR => 'HOUR',
+    			static::INTERVAL_MINUTE => 'MINUTE',
+    			static::INTERVAL_SECOND => 'SECOND'
+    	);
+    	parent::__contruct();
+    }
     
     /**
      * Hook callback to modify queries.
