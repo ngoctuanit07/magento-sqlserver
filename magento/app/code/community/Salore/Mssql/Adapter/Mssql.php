@@ -11,5 +11,4 @@
  * @copyright   Copyright (c) Salore team
  */
 class Salore_Mssql_Adapter_Mssql extends Salore_Mssql_Adapter_Abstract {
-	
 }
