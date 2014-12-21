@@ -166,13 +166,6 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
 	);
 	
 	/**
-	 * DDL statements for temporary tables
-	 *
-	 * @var string
-	 */
-	// protected $_tempRoutines = '#^\w+\s+temporary\s#im';
-	
-	/**
 	 * Allowed interval units array
 	 *
 	 * @var array
@@ -332,18 +325,13 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
 	 * @return array
 	 */
 	public function multi_query($sql) {
-		// #$result = $this->raw_query($sql);
-		
-		// $this->beginTransaction();
 		try {
 			$stmts = $this->_splitMultiQuery ( $sql );
 			$result = array ();
 			foreach ( $stmts as $stmt ) {
 				$result [] = $this->raw_query ( $stmt );
 			}
-			// $this->commit();
 		} catch ( Exception $e ) {
-			// $this->rollback();
 			throw $e;
 		}
 		
@@ -698,11 +686,11 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
 							),
 							'INDEX_TYPE' => $indexType,
 							'INDEX_METHOD' => $row [$fieldIndexType],
-							'type' => strtolower ( $indexType ), // for compatibility
+							'type' => strtolower ( $indexType ),
 							'fields' => array (
 									$row [$fieldColumn] 
 							)  // for compatibility
-										);
+					);
 				}
 			}
 			$this->saveDdlCache ( $cacheKey, static::DDL_INDEX, $ddl );
@@ -1042,7 +1030,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
 				$values [] = $this->_prepareInsertData ( $row, $bind );
 			}
 			unset ( $row );
-		} else { // Column-value pairs
+		// Column-value pairs
+		} else {
 			$cols = array_keys ( $data );
 			$values [] = $this->_prepareInsertData ( $data, $bind );
 		}
@@ -1185,7 +1174,6 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
 						/**
 						 * @see Zend_Db_Adapter_Exception
 						 */
-						// require_once 'Zend/Db/Adapter/Exception.php';
 						throw new Zend_Db_Adapter_Exception ( get_class ( $this ) . " doesn't support positional or named binding" );
 					}
 				}
