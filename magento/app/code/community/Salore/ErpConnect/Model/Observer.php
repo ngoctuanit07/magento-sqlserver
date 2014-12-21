@@ -11,6 +11,13 @@
  * @copyright   Copyright (c) Salore team
  */
 class Salore_ErpConnect_Model_Observer {
+	
+	const TABLE_SALES_ORDER_HEADER = 'tblSalesOrderHeader';
+	const TABLE_SALES_ORDER_DETAIL = 'tblSalesOrderDetail';
+	const TABLE_SALES_ORDER_ADJUSTMENT = 'tblSOAdjustment';
+	const TABLE_SHIP_BY_ITEM = 'tblShippedByItem';
+	const TABLE_SHIP_TRACKING = 'tblShippedTracking';
+	
     protected $_helper = null;
     protected $street = null;
     protected $firstname = null;
@@ -39,20 +46,16 @@ class Salore_ErpConnect_Model_Observer {
         $dataAdjustment = array ();
         $dataShippingItem = array ();
         $dataShipingTracking = array ();
-        $salesOrderHeader = 'tblSalesOrderHeader';
-        $salesOrderDetail = 'tblSalesOrderDetail';
-        $salesOrderAdjustments = 'tblSOAdjustment';
-        $shippeditem = 'tblShippedByItem';
-        $shippingtracking = 'tblShippedTracking';
+        
         try {
             $this->setOrderData ( $shippingmethod, $insertData, $dataOrderDetail, $dataAdjustment, $dataShippingItem, $dataShipingTracking, $cartItems, $orderId );
-            $db->insert ( $salesOrderHeader, $insertData );
-            $db->insert ( $salesOrderDetail, $dataOrderDetail );
-            $db->insert ( $salesOrderAdjustments, $dataAdjustment );
-            $db->insert ( $shippeditem, $dataShippingItem );
-            $db->insert ( $shippingtracking, $dataShipingTracking );
+            $db->insert ( static::TABLE_SALES_ORDER_HEADER, $insertData );
+            $db->insert ( static::TABLE_SALES_ORDER_DETAIL, $dataOrderDetail );
+            $db->insert ( static::TABLE_SALES_ORDER_ADJUSTMENT, $dataAdjustment );
+            $db->insert ( static::TABLE_SHIP_BY_ITEM, $dataShippingItem );
+            $db->insert ( static::TABLE_SHIP_TRACKING, $dataShipingTracking );
         } catch ( Exception $e ) {
-            Mage::getSingleton ( 'core/session' )->addError ( $e->getMessage () );
+             Mage::log($e->getMessage(), null, 'erpconnection.log');
         }
     }
     protected function setOrderData(&$shippingmethod, &$insertData, &$dataOrderDetail, &$dataAdjustment, &$dataShippingItem, &$dataShipingTracking, &$cartItems, &$orderId) {
@@ -141,18 +144,13 @@ class Salore_ErpConnect_Model_Observer {
         $dataAdjustment = array ();
         $dataShippingItem = array ();
         $dataShipingTracking = array ();
-        $salesOrderHeader = 'tblSalesOrderHeader';
-        $salesOrderDetail = 'tblSalesOrderDetail';
-        $salesOrderAdjustments = 'tblSOAdjustment';
-        $shippeditem = 'tblShippedByItem';
-        $shippingtracking = 'tblShippedTracking';
         $where = "MagSalesOrderNo = " . $order->getIncrementId ();
         try {
             $this->setOrderDataAfterSaveInAdmin (  $dataShippingItem , $order , $dataOrderDetail );
-            $db->update ( $salesOrderDetail, $dataOrderDetail, $where );
-            $db->update ( $shippeditem, $dataShippingItem, $where );
+            $db->update ( static::TABLE_SALES_ORDER_DETAIL, $dataOrderDetail, $where );
+            $db->update ( static::TABLE_SHIP_BY_ITEM, $dataShippingItem, $where );
         } catch ( Exception $e ) {
-            Mage::getSingleton ( 'core/session' )->addError ( $e->getMessage () );
+            Mage::log($e->getMessage(), null, 'erpconnection.log');
         }
     }
     protected function setOrderDataAfterSaveInAdmin(&$dataShippingItem, &$order , &$dataOrderDetail) {
@@ -177,15 +175,13 @@ class Salore_ErpConnect_Model_Observer {
     	$db = $this->_helper->getConnection ();
     	$dataShippingItem = array ();
     	$dataShipingTracking = array ();
-    	$shippeditem = 'tblShippedByItem';
-    	$shippingtracking = 'tblShippedTracking';
     	$where = "MagSalesOrderNo = " . $order->getIncrementId ();
     	try {
     		$this->setOrderShipmentSaveAfter($order , $dataShippingItem , $dataShipingTracking );
-    		$db->update ( $shippeditem, $dataShippingItem , $where );
-    		$db->update ( $shippingtracking, $dataShipingTracking , $where );
+    		$db->update ( static::TABLE_SHIP_BY_ITEM, $dataShippingItem , $where );
+    		$db->update ( static::TABLE_SHIP_TRACKING, $dataShipingTracking , $where );
     	} catch (Exception $e) {
-    		Mage::getSingleton ( 'core/session' )->addError ( $e->getMessage () );
+    		 Mage::log($e->getMessage(), null, 'erpconnection.log');
     	}
     
     }
