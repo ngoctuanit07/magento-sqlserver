@@ -674,7 +674,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                 
                 $upperKeyName = strtoupper ( $row [$fieldKeyName] );
                 if (isset ( $ddl [$upperKeyName] )) {
-                    $ddl [$upperKeyName] ['fields'] [] = $row [$fieldColumn]; // for compatible
+                    // for compatible
+                    $ddl [$upperKeyName] ['fields'] [] = $row [$fieldColumn];
                     $ddl [$upperKeyName] ['COLUMNS_LIST'] [] = $row [$fieldColumn];
                 } else {
                     $ddl [$upperKeyName] = array (
@@ -687,10 +688,9 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                             'INDEX_TYPE' => $indexType,
                             'INDEX_METHOD' => $row [$fieldIndexType],
                             'type' => strtolower ( $indexType ),
-                            'fields' => array (
-                                    $row [$fieldColumn] 
-                            )  // for compatibility
-                                        );
+                            // for compatibility
+                            'fields' => array ( $row [$fieldColumn]  )
+                    );
                 }
             }
             $this->saveDdlCache ( $cacheKey, static::DDL_INDEX, $ddl );
@@ -1019,11 +1019,13 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
      */
     public function insertOnDuplicate($table, array $data, array $fields = array()) {
         // extract and quote col names from the array keys
-        $row = reset ( $data ); // get first element from data array
-        $bind = array (); // SQL bind array
+        // get first element from data array
+        $row = reset ( $data );
+        // SQL bind array
+        $bind = array ();
         $values = array ();
-        
-        if (is_array ( $row )) { // Array of column-value pairs
+        // Array of column-value pairs
+        if (is_array ( $row )) {
             $cols = array_keys ( $row );
             foreach ( $data as $row ) {
                 if (array_diff ( $cols, array_keys ( $row ) )) {

@@ -673,7 +673,8 @@ class Salore_Mssql_Adapter_Abstract extends Zend_Db_Adapter_Pdo_Mssql implements
                 
                 $upperKeyName = strtoupper ( $row [$fieldKeyName] );
                 if (isset ( $ddl [$upperKeyName] )) {
-                    $ddl [$upperKeyName] ['fields'] [] = $row [$fieldColumn]; // for compatible
+                    // for compatible
+                    $ddl [$upperKeyName] ['fields'] [] = $row [$fieldColumn];
                     $ddl [$upperKeyName] ['COLUMNS_LIST'] [] = $row [$fieldColumn];
                 } else {
                     $ddl [$upperKeyName] = array (
@@ -685,7 +686,8 @@ class Salore_Mssql_Adapter_Abstract extends Zend_Db_Adapter_Pdo_Mssql implements
                             ),
                             'INDEX_TYPE' => $indexType,
                             'INDEX_METHOD' => $row [$fieldIndexType],
-                            'type' => strtolower ( $indexType ), // for compatibility
+                            // for compatibility
+                            'type' => strtolower ( $indexType ),
                             'fields' => array (
                                     $row [$fieldColumn] 
                             ) 
