@@ -146,28 +146,19 @@ class Salore_ErpConnect_Model_Observer {
         $shippingtracking = 'tblShippedTracking';
         $where = "MagSalesOrderNo = " . $order->getIncrementId ();
         try {
-            $this->setOrderDataAfterSaveInAdmin ( $order, $dataShippingItem, $dataShipingTracking, $dataOrderDetail );
+            $this->setOrderDataAfterSaveInAdmin (  $dataShippingItem , $order , $dataOrderDetail );
             $db->update ( $salesOrderDetail, $dataOrderDetail, $where );
-            $db->update ( $shippingtracking, $dataShipingTracking, $where );
             $db->update ( $shippeditem, $dataShippingItem, $where );
         } catch ( Exception $e ) {
             Mage::getSingleton ( 'core/session' )->addError ( $e->getMessage () );
         }
     }
-    protected function setOrderDataAfterSaveInAdmin(&$dataShippingItem, &$order, &$dataShipingTracking, &$dataOrderDetail) {
+    protected function setOrderDataAfterSaveInAdmin(&$dataShippingItem, &$order , &$dataOrderDetail) {
         $orderItem = $order->getAllItems ();
         foreach ( $orderItem as $item ) {
             
             $dataOrderDetail ['ItemCode'] = $item->getItemId ();
             $dataShippingItem ['ItemCode'] = $item->getItemId ();
-        }
-        $shipmentCollection = Mage::getResourceModel ( 'sales/order_shipment_collection' )->setOrderFilter ( $order )->load ();
-        foreach ( $shipmentCollection as $shipment ) {
-            foreach ( $shipment->getAllTracks () as $tracknum ) {
-                $dataShipingTracking ['TrackingID'] = $tracknum->getId ();
-            }
-            $dataShipingTracking ['ShipDate'] = $shipment->getCreatedAt ();
-            $dataShippingItem ['ShipDate'] = $shipment->getCreatedAt ();
         }
         $dataOrderDetail ['QuantityOrdered'] = ( int ) ($order->getQtyOrdered ());
         $dataOrderDetail ['QuantityShipped'] = ( int ) ($order->getQtyShipped ());
