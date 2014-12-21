@@ -32,19 +32,18 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
             ->setCreatedAt ( strtotime ( 'now' ) )
             ->setSku ( $data ['SKU'] )
             ->setName ( $data ['SKU_Name'] )
-            ->setWeight ( 4.0000 )
+            ->setWeight ( 1.0000 )
             ->setStatus ( 1 )
             ->setTaxClassId ( 4 )
             ->setVisibility ( Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH )
-            ->setNewsToDate ( '06/30/2014' )
-            ->setCountryOfManufacture ( 'AF' )
             ->setPrice ( $data ['Price'] )
             ->setDescription ( $data ['ShortDesc'] )
             ->setShortDescription ( $data ['ShortDesc'] )
             ->setMediaGallery ( array (
                     'images' => array (),
                     'values' => array () 
-            ) )
+           			)
+             )
             ->setStockData ( array (
                     'use_config_manage_stock' => 1,
                     'manage_stock' => 1,
@@ -52,7 +51,9 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
                     'max_sale_qty' => 2,
                     'is_in_stock' => 1,
                     'qty' => $data ['Qty']
-            ) );
+           		 ) 
+            )
+            ->setCategoryIds(array(3));
             $product->save ();
         } catch ( Exception $e ) {
             throw $e;

@@ -202,8 +202,11 @@ class Salore_ErpConnect_Model_Observer {
     	 
     }
     static public function dailyCatalogUpdate() {
-        $currentTimestamp = Mage::getModel ( 'core/date' )->timestamp ( time () );
-        $date = date ( 'Y-m-d H:i:s', $currentTimestamp );
-        Mage::log ( $date, null, 'erpconnect.log' );
+       /**
+        * $currentTimestamp = Mage::getModel ( 'core/date' )->timestamp ( time () );
+        * $date = date ( 'Y-m-d H:i:s', $currentTimestamp );
+        * Mage::log ( $date, null, 'erpconnect.log' );
+        */
+    	Mage::helper('sberpconnect/product')->import();
     }
 }
