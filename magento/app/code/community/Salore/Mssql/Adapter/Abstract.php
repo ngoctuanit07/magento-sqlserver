@@ -2486,6 +2486,8 @@ class Salore_Mssql_Adapter_Abstract extends Zend_Db_Adapter_Pdo_Mssql implements
                 } elseif (is_string ( $v )) {
                     $value = sprintf ( 'VALUES(%s)', $this->quoteIdentifier ( $v ) );
                     $field = $this->quoteIdentifier ( $v );
+                } else {
+                    //Do no thing
                 }
                 
                 if ($field && $value) {

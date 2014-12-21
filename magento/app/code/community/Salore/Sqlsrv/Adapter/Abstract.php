@@ -2484,6 +2484,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                 } elseif (is_string ( $v )) {
                     $value = sprintf ( 'VALUES(%s)', $this->quoteIdentifier ( $v ) );
                     $field = $this->quoteIdentifier ( $v );
+                } else {
+                    //Do no thing
                 }
                 
                 if ($field && $value) {

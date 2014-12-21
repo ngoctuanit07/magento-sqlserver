@@ -45,7 +45,7 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract {
             // execute the statement
             $stmt = sqlsrv_query ( $connection, $sql, $param );
             if ($stmt === false) {
-                die ( print_r ( sqlsrv_errors (), true ) );
+                print_r ( sqlsrv_errors (), true );
                 sqlsrv_rollback ( $connection );
             } else {
                 sqlsrv_commit ( $connection );
@@ -164,6 +164,6 @@ class Salore_Sqlsrv_Adapter_Sqlsrv extends Salore_Sqlsrv_Adapter_Abstract {
      * @return Varien_Db_Select
      */
     public function select() {
-        return new Zend_Db_Select ( $this );
+        return new Varien_Db_Select ( $this );
     }
 }
