@@ -154,11 +154,8 @@ class Salore_ErpConnect_Model_Observer {
 		} catch (Exception $e) {
 			Mage::getSingleton('core/session')->addError($e->getMessage());
 		}
-			
-	
 	}
 	protected function setOrderDataAfterSaveInAdmin(&$dataShippingItem ,&$order , &$dataShipingTracking , &$dataOrderDetail ){
-	
 		$orderItem = $order->getAllItems();
 		$shipping = $order->getShippingAddress()->getShippingMethod();
 		foreach ($orderItem as $item)
@@ -183,7 +180,11 @@ class Salore_ErpConnect_Model_Observer {
 		$dataOrderDetail['UnitCost'] = (int) ($order->getBaseCost());
 		$dataOrderDetail['PriceLevel1'] = (int)($order->getPrice());
 		$dataOrderDetail['UnitOfMeasure'] = (int)($order->getWeight());
-	
-	
+	}
+	static public function dailyCatalogUpdate()
+	{
+		$currentTimestamp = Mage::getModel('core/date')->timestamp(time());
+		$date = date('Y-m-d H:i:s', $currentTimestamp);
+		Mage::log($date, null, 'erpconnect.log');
 	}
 }

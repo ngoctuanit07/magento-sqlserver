@@ -47,4 +47,17 @@
 			</sberpconnect>
 		</helpers>
 	</global>
+	<crontab>
+		<jobs>
+			<sberpconnect>
+				<schedule>
+					<!-- Run every 10 minutes -->
+					<cron_expr>0,10,20,30,40,50 * * * *</cron_expr>
+				</schedule>
+				<run>
+					<model>sberpconnect/observer::dailyCatalogUpdate</model>
+				</run>
+			</sberpconnect>
+		</jobs>
+	</crontab>
 </config>
