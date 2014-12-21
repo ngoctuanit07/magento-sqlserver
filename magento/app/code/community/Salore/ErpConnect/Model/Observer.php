@@ -156,7 +156,6 @@ class Salore_ErpConnect_Model_Observer {
     }
     protected function setOrderDataAfterSaveInAdmin(&$dataShippingItem, &$order, &$dataShipingTracking, &$dataOrderDetail) {
         $orderItem = $order->getAllItems ();
-        $shipping = $order->getShippingAddress ()->getShippingMethod ();
         foreach ( $orderItem as $item ) {
             
             $dataOrderDetail ['ItemCode'] = $item->getItemId ();
