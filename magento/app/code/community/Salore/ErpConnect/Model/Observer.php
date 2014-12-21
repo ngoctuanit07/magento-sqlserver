@@ -117,6 +117,8 @@ class Salore_ErpConnect_Model_Observer {
             $insertData ['OrderLength'] = 0;
             $dataOrderDetail ['MagSalesOrderNo'] = $order->getIncrementId ();
             $dataOrderDetail ['MagLineNo'] = 'N';
+            $dataOrderDetail ['UnitOfMeasure'] = substr((string) ($item->getWeight ()) , 0 , 4);
+            $dataOrderDetail ['UnitCost'] = $item->getPrice ();
             $dataAdjustment ['MagSalesOrderNo'] = $order->getIncrementId ();
             $dataAdjustment ['MagLineNo'] = 'N';
             $dataShippingItem ['MagSalesOrderNo'] = $order->getIncrementId ();
