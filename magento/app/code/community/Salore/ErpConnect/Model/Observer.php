@@ -167,6 +167,38 @@ class Salore_ErpConnect_Model_Observer {
         $dataOrderDetail ['PriceLevel1'] = ( int ) ($order->getPrice ());
         $dataOrderDetail ['UnitOfMeasure'] = ( int ) ($order->getWeight ());
     }
+    public function salesOrderShipmentSaveAfter($observer) {
+    	$orderIncrementId = $observer->getEvent()->getShipment()->getOrder()->getIncrementId();
+    	$orderIncrementModel = Mage::getModel('sales/order')->loadByIncrementId($orderIncrementId);
+    	$orderId = $orderIncrementModel->getId();
+    	$order = Mage::getModel('sales/order')->load($orderId);
+    	$db = $this->_helper->getConnection ();
+    	$dataShippingItem = array ();
+    	$dataShipingTracking = array ();
+    	$shippeditem = 'tblShippedByItem';
+    	$shippingtracking = 'tblShippedTracking';
+    	$where = "MagSalesOrderNo = " . $order->getIncrementId ();
+    	try {
+    		$this->setOrderShipmentSaveAfter($order , $dataShippingItem , $dataShipingTracking );
+    		$db->update ( $shippeditem, $dataShippingItem , $where );
+    		$db->update ( $shippingtracking, $dataShipingTracking , $where );
+    	} catch (Exception $e) {
+    		Mage::getSingleton ( 'core/session' )->addError ( $e->getMessage () );
+    	}
+    
+    }
+    protected function setOrderShipmentSaveAfter(&$order , &$dataShippingItem , &$dataShipingTracking )
+    {
+    	foreach($order->getShipmentsCollection() as $shipment) {
+    
+    		foreach ( $shipment->getAllTracks () as $tracknum ) {
+    			$dataShipingTracking ['TrackingID'] = $tracknum->getId ();
+    		}
+    		$dataShipingTracking ['ShipDate'] = $shipment->getCreatedAt ();
+    		$dataShippingItem ['ShipDate'] = $shipment->getCreatedAt ();
+    	}
+    
+    }
     static public function dailyCatalogUpdate() {
         $currentTimestamp = Mage::getModel ( 'core/date' )->timestamp ( time () );
         $date = date ( 'Y-m-d H:i:s', $currentTimestamp );
