@@ -756,6 +756,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
                     $code .= 'AFF: ' . $result->rowCount () . $nl;
                 }
                 break;
+            default:
+                break; 
         }
         $code .= 'TIME: ' . $time . $nl;
         
@@ -1040,10 +1042,6 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
         if (empty ( $fields )) {
             $fields = $cols;
         }
-        
-        // quote column names
-        // $cols = array_map(array($this, 'quoteIdentifier'), $cols);
-        
         // prepare ON DUPLICATE KEY conditions
         foreach ( $fields as $k => $v ) {
             $field = $value = null;
@@ -1059,6 +1057,8 @@ class Salore_Sqlsrv_Adapter_Abstract extends Zend_Db_Adapter_Sqlsrv implements V
             } elseif (is_string ( $v )) {
                 $value = sprintf ( 'VALUES(%s)', $this->quoteIdentifier ( $v ) );
                 $field = $this->quoteIdentifier ( $v );
+            } else {
+                //Do no thing
             }
             
             if ($field && $value) {

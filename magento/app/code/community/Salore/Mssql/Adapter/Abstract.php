@@ -755,6 +755,8 @@ class Salore_Mssql_Adapter_Abstract extends Zend_Db_Adapter_Pdo_Mssql implements
                     $code .= 'AFF: ' . $result->rowCount () . $nl;
                 }
                 break;
+            default:
+                break;
         }
         $code .= 'TIME: ' . $time . $nl;
         
@@ -1042,10 +1044,6 @@ class Salore_Mssql_Adapter_Abstract extends Zend_Db_Adapter_Pdo_Mssql implements
         if (empty ( $fields )) {
             $fields = $cols;
         }
-        
-        // quote column names
-        // $cols = array_map(array($this, 'quoteIdentifier'), $cols);
-        
         // prepare ON DUPLICATE KEY conditions
         foreach ( $fields as $k => $v ) {
             $field = $value = null;
@@ -1061,6 +1059,8 @@ class Salore_Mssql_Adapter_Abstract extends Zend_Db_Adapter_Pdo_Mssql implements
             } elseif (is_string ( $v )) {
                 $value = sprintf ( 'VALUES(%s)', $this->quoteIdentifier ( $v ) );
                 $field = $this->quoteIdentifier ( $v );
+            } else {
+                //Do nothing
             }
             
             if ($field && $value) {
