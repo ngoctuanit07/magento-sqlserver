@@ -19,8 +19,8 @@
 		<resources>
 			<sbmssql_setup>
 				<connection>
-					<host><![CDATA[192.168.1.211]]></host>
-					<dbname><![CDATA[Sage]]></dbname>
+					<host><![CDATA[DELL-PC]]></host>
+					<dbname><![CDATA[test]]></dbname>
 					<username><![CDATA[sa]]></username>
 					<password><![CDATA[qaz123456]]></password>
 					<type><![CDATA[sbmssql]]></type>
