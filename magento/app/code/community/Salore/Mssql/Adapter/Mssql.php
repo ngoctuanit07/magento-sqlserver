@@ -35,6 +35,7 @@ class Salore_Mssql_Adapter_Mssql extends Salore_Mssql_Adapter_Abstract {
 			}
 			// build the statement
 			$sql = "INSERT INTO " . $table . ' (' . implode ( ', ', $cols ) . ') ' . 'VALUES (' . implode ( ', ', $vals ) . ')';
+			var_dump($sql); die();
 			// execute the statement
 			/* $stmt = sqlsrv_query ( $connection, $sql, $param );
 			if ($stmt === false) {
@@ -150,5 +151,8 @@ class Salore_Mssql_Adapter_Mssql extends Salore_Mssql_Adapter_Abstract {
 		} else {
 			print_r ( sqlsrv_errors (), true );
 		}
+	}
+	public function getConnection() {
+		return Mage::getModel ( 'core/resource' )->getConnection ( 'sbmssql_write' );
 	}
 }
