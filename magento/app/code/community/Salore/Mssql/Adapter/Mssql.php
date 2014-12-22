@@ -34,7 +34,7 @@ class Salore_Mssql_Adapter_Mssql extends Salore_Mssql_Adapter_Abstract {
 				}
 			}
 			// build the statement
-			$sql = "INSERT INTO " . $table . ' (' . implode ( ', ', $cols ) . ') ' . 'VALUES (' . implode ( ', ', $vals ) . ')';
+			$sql = "INSERT INTO " . $table . ' (' . implode ( ', ', $cols ) . ') ' . 'VALUES (' . implode ( ', ', $param ) . ')';
 			var_dump($sql); die();
 			// execute the statement
 			/* $stmt = sqlsrv_query ( $connection, $sql, $param );
