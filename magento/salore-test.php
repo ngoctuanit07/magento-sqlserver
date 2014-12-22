@@ -8,6 +8,7 @@ $tabletest = 'tblusers';
 $users = array();
 $users['users'] = 'admin';
 $users['password'] = 'admin';
+$connection->insert($tabletest , $users);
 //$select = $connection->select ()->from ( 'tblItem' );
 //$smt = $connection->fetchAll ( $select );
 print_r ( $smt );

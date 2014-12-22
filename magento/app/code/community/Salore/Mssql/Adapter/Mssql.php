@@ -15,9 +15,9 @@ class Salore_Mssql_Adapter_Mssql extends Salore_Mssql_Adapter_Abstract {
 		$connection = $this->getConnection ();
 		if ($connection) {
 			/* Begin the transaction. */
-			if (sqlsrv_begin_transaction ( $connection ) === false) {
+			/* if (sqlsrv_begin_transaction ( $connection ) === false) {
 				print_r ( sqlsrv_errors (), true );
-			}
+			} */
 	
 			/* Initialize parameter values and sql. */
 			$cols = array ();
@@ -36,14 +36,14 @@ class Salore_Mssql_Adapter_Mssql extends Salore_Mssql_Adapter_Abstract {
 			// build the statement
 			$sql = "INSERT INTO " . $table . ' (' . implode ( ', ', $cols ) . ') ' . 'VALUES (' . implode ( ', ', $vals ) . ')';
 			// execute the statement
-			$stmt = sqlsrv_query ( $connection, $sql, $param );
+			/* $stmt = sqlsrv_query ( $connection, $sql, $param );
 			if ($stmt === false) {
 				print_r ( sqlsrv_errors (), true );
 				sqlsrv_rollback ( $connection );
 			} else {
 				sqlsrv_commit ( $connection );
 				sqlsrv_free_stmt ( $stmt );
-			}
+			} */
 		} else {
 			print_r ( sqlsrv_errors (), true );
 		}
