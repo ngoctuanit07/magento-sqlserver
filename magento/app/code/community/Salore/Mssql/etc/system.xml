@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<tabs>
+		<sbmssql translate="label">
+			<label>Salore</label>
+			<sort_order>101</sort_order>
+		</sbmssql>
+	</tabs>
+	<sections>
+		<sbmssql translate="label">
+			<label>Salore MSSQL</label>
+			<tab>sbmssql</tab>
+			<frontend_type>text</frontend_type>
+			<sort_order>10</sort_order>
+			<show_in_default>1</show_in_default>
+			<show_in_website>1</show_in_website>
+			<show_in_store>1</show_in_store>
+			<frontend_model>adminhtml/system_config_form</frontend_model>
+			<groups>
+				<!--GENERAL SETTING -->
+				<setting translate="label" module="sbmssql">
+					<label>Salore Mssql Setting</label>
+					<frontend_type>text</frontend_type>
+					<sort_order>1</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>1</show_in_website>
+					<show_in_store>1</show_in_store>
+					<frontend_model>adminhtml/system_config_form_fieldset</frontend_model>
+					<fields>
+						<host translate="label" module="sbmssql">
+							<label>Host</label>
+							<frontend_type>text</frontend_type>
+							<sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+						</host>
+						<username translate="label" module="sbmssql">
+							<label>UserName</label>
+							<frontend_type>text</frontend_type>
+							<sort_order>2</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+						</username>
+						<password translate="label" module="sbmssql">
+							<label>Password</label>
+							<frontend_type>password</frontend_type>
+							<backend_model>adminhtml/system_config_backend_encrypted</backend_model>
+							<sort_order>3</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+						</password>
+						<dbname translate="label" module="sbmssql">
+							<label>Database Name</label>
+							<frontend_type>text</frontend_type>
+							<sort_order>4</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+						</dbname>
+						<port translate="label" module="sbmssql">
+							<label>Port</label>
+							<frontend_type>text</frontend_type>
+							<sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+						</port>
+						
+					</fields>
+				</setting>			
+			</groups>
+		</sbmssql>
+	</sections>
+</config>
