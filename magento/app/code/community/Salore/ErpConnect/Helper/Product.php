@@ -40,17 +40,24 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
     }
     public function createProduct($data) {
         $product = Mage::getModel ( 'catalog/product' );
+        $specialPrice = $data['Special_Price'];
+        $specialPriceFromDate = $data['Special_From'];
+        $specialPriceToDate = $data['Special_To'];
+        $taxClassId = $data['Tax_Class_ID'];
         try {
             $product
             ->setWebsiteIds ( array (1) )
             ->setAttributeSetId ( 4 )
             ->setTypeId ( 'simple' )
-            ->setCreatedAt ( strtotime ( 'now' ) )
+            ->setCreatedAt ( $data ['DateAdded'] )
             ->setSku ( $data ['SKU'] )
             ->setName ( $data ['SKU_Name'] )
+            ->setSpecialPrice($specialPrice) 
+            ->setSpecialFromDate($specialPriceFromDate) 
+            ->setSpecialToDate($specialPriceToDate)
             ->setWeight ( 1.0000 )
             ->setStatus ( 1 )
-            ->setTaxClassId ( 4 )
+            ->setTaxClassId ( $taxClassId )
             ->setVisibility ( Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH )
             ->setPrice ( $data ['Price'] )
             ->setDescription ( $data ['ShortDesc'] )

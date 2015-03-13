@@ -33,7 +33,16 @@
                         <method>salesOrderShipmentSaveAfter</method>
                     </sberpconnect>
                 </observers>
-			</sales_order_shipment_save_after>
+			</sales_order_shipment_save_after> 
+			<sales_order_save_after>
+				<observers>
+                    <sberpconnect>
+                        <type>singleton</type>
+                        <class>Salore_ErpConnect_Model_Observer</class>
+                        <method>changeStatusOrderInAdmin</method>
+                    </sberpconnect>
+                </observers>
+			</sales_order_save_after>   
         </events>
         <models>
 			<sberpconnect>
