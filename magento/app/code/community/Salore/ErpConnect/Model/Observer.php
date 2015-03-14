@@ -47,27 +47,25 @@ class Salore_ErpConnect_Model_Observer {
              Mage::log($e->getMessage(), null, 'erpconnection.log');
         }
     }
-    protected function insertDataSalreOrderDetail($db , $order , $dataOrderDetail ) {
+  	protected function insertDataSalreOrderDetail($db , $order , $dataOrderDetail ) {
     	$orderId = $order->getId();
     	$orderIncrementId = $order->getIncrementId ();
     	$orderIncrement = Mage::getModel('sales/order')->loadByIncrementId($orderIncrementId);
     	$giftcardcode = unserialize($orderIncrement->getGiftCards());
     	$couponCode = $orderIncrement->getData('coupon_code');
+    	$orderItemIds  = $this->_helper->getItemIdFromOrder($orderId);
     	if(isset($couponCode) && $couponCode) {
     		$this->checkCouponCode($couponCode, $dataOrderDetail, $order);
-    	} else {
-    		$this->prepareDataOrderDetailDefault($orderId, $dataOrderDetail);
-    	}
-    	if(isset($giftcardcode) && $giftcardcode) {
+    	}elseif(is_array($giftcardcode) && count($giftcardcode)) {
     		$this->checkGiftCardCode($giftcardcode, $dataOrderDetail);
-    	}
-    	$orderItemIds  = $this->_helper->getItemIdFromOrder($orderId);
+    	}else {
+    		$this->prepareDataAnyColumTableOrderDetail($orderItemIds, $dataOrderDetail);
+    	} 
+    
     	$dataOrderDetail['MagSalesOrderNo'] = $order->getIncrementId ();
     	$dataOrderDetail['SalesOrderNo'] =  $this->_helper->prefixOrderNo($order->getId());
-    	// still not sure when use Y or N
-    	$dataOrderDetail['DropShip'] = "N";
     	foreach ($orderItemIds as $id) {
-    		$dataOrderDetail['MagLineNo'] = $id;
+    		$dataOrderDetail['MagLineNo'] = $id['item_id'];
     		try {
     			$db->insert(static::TABLE_SALES_ORDER_DETAIL, $dataOrderDetail);
     		} catch ( Exception $e ) {
@@ -75,6 +73,16 @@ class Salore_ErpConnect_Model_Observer {
     		}
     	}
     }
+    protected function prepareDataAnyColumTableOrderDetail($orderItemIds , &$dataOrderDetail) {
+    	foreach ($orderItemIds as $id) {
+    		$dataOrderDetail ['ItemCode'] = $id['sku'];
+    		$dataOrderDetail ['ItemCodeDesc'] =$id['name'];
+    		$dataOrderDetail ['LineWeight'] = $id['weight'];
+    		$dataOrderDetail ['ExtensionAmt'] = $id['row_total'];
+    	}
+    }
+    
+    
     protected function prepareDataForTableSalesOrderHeader(&$dataOrderHeader , $quote , $order ) {
     	$shippingmethod = $quote->getShippingAddress ()->getShippingMethod ();
     	$cartItems = $quote->getAllVisibleItems ();
@@ -121,10 +129,14 @@ class Salore_ErpConnect_Model_Observer {
     }
     public function changeStatusOrderInAdmin($observer) {
     	$order = $observer->getEvent()->getOrder();
+    	$orderId = $order->getId();
+    	$invoice = Mage::getModel('sales/order_invoice')->load($orderId);
+    	print_r($invoice); die();
     	$billingAddress = $order->getBillingAddress ()->getData ();
     	$orderIncrementId = $order->getIncrementId();
     	$orderStatus = $order->getStatus();
     	$orderIncrementModel = Mage::getModel('sales/order')->loadByIncrementId($orderIncrementId);
+		$giftcardcode = unserialize($orderIncrementModel->getGiftCards());
     	$db = $this->_helper->getConnection ();
     	$dataOrderHeader = array ();
     	$where = "MagSalesOrderNo = " . $orderIncrementId;
@@ -138,6 +150,11 @@ class Salore_ErpConnect_Model_Observer {
     				$dataOrderHeader['OrderStatus'] = "OPEN";
     				$db->update (static::TABLE_SALES_ORDER_HEADER , $dataOrderHeader , $where);
     				break;
+
+    		}
+		if(isset($giftcardcode) && is_array($giftcardcode)) {
+    			$this->checkGiftCardCode($giftcardcode, $dataOrderDetail);
+    			$db->update(static::TABLE_SALES_ORDER_DETAIL , $dataOrderDetail , $where);
     		}
     	} catch (Exception $e) {
     		Mage::log($e->getMessage(), null, 'erpconnection.log');
@@ -190,24 +207,12 @@ class Salore_ErpConnect_Model_Observer {
     		}
     	}
     }
-    protected function prepareDataOrderDetailDefault($orderId , &$dataOrderDetail) {
-    	$orderCollection = Mage::getModel('sales/order')->load($orderId);
-    	$orderItem = $orderCollection->getAllItems();
-    	foreach ($orderItem as $item) {
-    		$dataOrderDetail ['ItemCode'] = $item->getSku();
-    		$dataOrderDetail ['ItemCodeDesc'] =$item ->getName();
-    		$dataOrderDetail ['LineWeight'] = $item->getWeight();
-    		$dataOrderDetail ['ExtensionAmt'] = $item->getRowTotal();
-    	}
-    }
     protected function checkGiftCardCode($giftcardcode , &$dataOrderDetail) {
     	foreach ($giftcardcode as $card ) {
     		if(isset( $card['c']) &&  $card['c']) {
     			$dataOrderDetail ['ItemCode'] = "/GIFT CARD";
     			$dataOrderDetail ['UnitOfMeasure'] = "DOL";
     			$dataOrderDetail ['ItemCodeDesc'] = "to be determined";
-    		} else {
-    			return;
     		}
     	}
     }

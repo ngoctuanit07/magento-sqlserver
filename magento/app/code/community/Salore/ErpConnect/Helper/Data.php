@@ -21,13 +21,13 @@ class Salore_ErpConnect_Helper_Data extends Mage_Core_Helper_Abstract {
         return Mage::getModel ( 'core/resource' )->getConnection ( 'sbmssql_write' );
     }
     public function getItemIdFromOrder( $orderId ) {
-    	$id = array();
+    	$items = array();
     	$orderCollection = Mage::getModel('sales/order')->load($orderId);
     	$orderItem = $orderCollection->getAllItems();
     	foreach ($orderItem as $item) {
-    		$id[] = $item->getId();
+    		$items[] = $item->getData();
     	}
-    	return $id;
+    	return $items;
     }
     public function prefixOrderNo($orderId) {
     	$lengthId = strlen($orderId);
