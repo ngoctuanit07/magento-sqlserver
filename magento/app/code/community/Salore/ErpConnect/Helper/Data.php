@@ -21,13 +21,13 @@ class Salore_ErpConnect_Helper_Data extends Mage_Core_Helper_Abstract {
         return Mage::getModel ( 'core/resource' )->getConnection ( 'sbmssql_write' );
     }
     public function getItemIdFromOrder( $orderId ) {
-    	$items = array();
+    	$id = array();
     	$orderCollection = Mage::getModel('sales/order')->load($orderId);
     	$orderItem = $orderCollection->getAllItems();
     	foreach ($orderItem as $item) {
-    		$items[] = $item->getData();
+    		$id[] = $item->getData();
     	}
-    	return $items;
+    	return $id;
     }
     public function prefixOrderNo($orderId) {
     	$lengthId = strlen($orderId);
@@ -67,5 +67,10 @@ class Salore_ErpConnect_Helper_Data extends Mage_Core_Helper_Abstract {
     		$shipvia = $shippingMethod;
     	}
     	return $shipvia;
+    }
+ public function formatDate($date) {
+    	$timestamp = Mage::getModel('core/date')->timestamp($date);
+    	$date = date('m/d/Y', $timestamp);
+    	return $date;
     }
 }	

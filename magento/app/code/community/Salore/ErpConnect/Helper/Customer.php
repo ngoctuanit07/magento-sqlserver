@@ -18,25 +18,24 @@ class Salore_ErpConnect_Helper_Customer extends Mage_Core_Helper_Abstract {
         $connection = Mage::helper ( 'sberpconnect' )->getConnection ();
         $select = $connection->select ()->from ( 'tblCustomer' );
         $customers = $connection->fetchAll ( $select );
+	 echo $data['EmailAddress'];
         foreach ( $customers as $data ) {
-            if (!$this->checCustomerExist($data ['EMailAddress'])) {
+        	if((int)strlen(trim($data['EmailAddress'])) <= 0 ) {
+		//	print_r($data);
+        		echo $data['EmailAddress'];
+			continue 1;
+			
+				
+        	}
+          	if (!$this->checCustomerExist($data ['EmailAddress'])) {
                 $this->createCustomer ( $data );
+                 $this->updateSage($data, $connection);
+
+            } else {
+                $this->updateSage($data, $connection);
             }
+        	
         }
-    }
-    /**
-     * Check if product exists in magento
-     * @param unknown $sku
-     * @return boolean
-     */
-    public function isSkuExist($sku)
-    {
-        $product = Mage::getModel('catalog/product')->loadByAttribute('sku', $sku);
-        if ($product && $product->getId() > 0)
-        {
-            return true;
-        }
-        return false;
     }
     public function checCustomerExist($email) {
     	$customer = Mage::getModel("customer/customer")->loadByEmail($email);
@@ -46,8 +45,16 @@ class Salore_ErpConnect_Helper_Customer extends Mage_Core_Helper_Abstract {
     	return false;
     	 
     }
+    public function updateSage($data  , $connection) {
+    	$updateData = array();
+    	$updateData['SentToMagento'] = "1";
+    	$email = $data ['EmailAddress'];
+    	$where = "EmailAddress = '{$email}'"  ;
+    	$connection->update("tblCustomer" , $updateData , $where);
+    }
+    
     public function createCustomer($data) {
-        $customer = Mage::getModel ( 'customer/customer' )->loadByEmail($data['EMailAddress']);
+        $customer = Mage::getModel ( 'customer/customer' );
         $websiteId = Mage::app()->getWebsite()->getId();
         $store = Mage::app()->getStore();
         try {
@@ -55,13 +62,14 @@ class Salore_ErpConnect_Helper_Customer extends Mage_Core_Helper_Abstract {
             ->setWebsiteId($websiteId)
             ->setStore($store)
             ->setCreatedAt($data['AddedDate'])
-            ->setFirstname('John')
+            ->setFirstname($data['CustomerName'])
             ->setLastname('Doe')
-            ->setEmail($data['EMailAddress'])
+            ->setEmail($data['EmailAddress'])
             ->setPassword('somepassword');
-            $_custom_address = array (
-            		'firstname'  => $data['firstname'],
-            		'lastname'   => $data['lastname'],
+            $customer->save(); echo $customer->getId();die();
+        /*    $_custom_address = array (
+            		'firstname'  => $data['CustomerName'],
+            		'lastname'   => "Doe",
             		'street'     => array (
             				'0' => $data['AddressLine1'] ,
             				'1' => $data['AddressLine2']
@@ -78,9 +86,10 @@ class Salore_ErpConnect_Helper_Customer extends Mage_Core_Helper_Abstract {
             ->setCustomerId($customer->getId()) // this is the most important part
             ->setIsDefaultBilling('1')  // set as default for billing
             ->setIsDefaultShipping('1') // set as default for shipping
-            ->setSaveInAddressBook('1');
+            ->setSaveInAddressBook('1');*/
         } catch ( Exception $e ) {
             Mage::log($e->getMessage(), null, 'erpconnection.log');
         }
     }
 }
+

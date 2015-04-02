@@ -18,11 +18,35 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
         $connection = Mage::helper ( 'sberpconnect' )->getConnection ();
         $select = $connection->select ()->from ( 'tblItem' );
         $products = $connection->fetchAll ( $select );
-        foreach ( $products as $data ) {
+       $dataProduct = array();
+//	print_r($products); die(); 
+	foreach ( $products as $data ) {
             if (!$this->isSkuExist($data ['SKU'])) {
-                $this->createProduct ( $data );
+$this->createProduct ( $data );
+		 $this->updateSage($data, $dataProduct, $connection);
+            }else 
+		{
+	//	print_r($data); 
+            	$this->updateSage($data, $dataProduct, $connection);
             }
         }
+    }
+	/*public function updateSage($data , &$dataProduct , &$connection) {
+	
+	$productCollection = Mage::getModel('catalog/product')->loadByAttribute('sku', $data ['SKU']);
+	$dataProduct['SentToMagento'] = $productCollection->getCreatedAt();
+    	$where = "SKU = " . $productCollection->getSku();
+    	$connection->update(static::TABLE_ITEM , $dataProduct , $where);
+    }*/
+     public function updateSage($data , &$dataProduct , $connection) {
+	//die('abc');
+    	$dataProduct['SentToMagento'] = $data ['DateAdded'];
+    //	$where = "SKU=" . '{$data ['SKU']}';
+	//$where = "SKU = ". '"'.$data['SKU'].'"';
+	//echo get_class($connection);
+	$where = "SKU = '{$data['SKU']}'";    	
+$connection->update("tblItem", $dataProduct , $where);
+
     }
     /**
      * Check if product exists in magento
@@ -32,8 +56,9 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
     public function isSkuExist($sku)
     {
         $product = Mage::getModel('catalog/product')->loadByAttribute('sku', $sku);
-        if ($product && $product->getId() > 0)
+        if ($product )
         {
+		//die('abc');
             return true;
         }
         return false;
@@ -83,3 +108,4 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
         }
     }
 }
+
