@@ -11,7 +11,7 @@
 				<observers>
                     <sberpconnect>
                         <type>singleton</type>
-                        <class>Salore_ErpConnect/Model_Observer</class>
+                        <class>sberpconnect/observer</class>
                         <method>salesPlaceOrderAfter</method>
                     </sberpconnect>
                 </observers>
@@ -20,7 +20,7 @@
 				<observers>
                     <sberpconnect>
                         <type>singleton</type>
-                        <class>Salore_ErpConnect_Model/Observer</class>
+                        <class>sberpconnect/observer</class>
                         <method>getOrderAfterSaveInAdmin</method>
                     </sberpconnect>
                 </observers>
@@ -29,7 +29,7 @@
 				<observers>
                     <sberpconnect>
                         <type>singleton</type>
-                        <class>Salore_ErpConnect_Model/Observer</class>
+                        <class>sberpconnect/Observer</class>
                         <method>salesOrderShipmentSaveAfter</method>
                     </sberpconnect>
                 </observers>
@@ -38,7 +38,7 @@
 				<observers>
                     <sberpconnect>
                         <type>singleton</type>
-                        <class>Salore_ErpConnect_Model/Observer</class>
+                        <class>sberpconnect/observer</class>
                         <method>changeStatusOrderInAdmin</method>
                     </sberpconnect>
                 </observers>
