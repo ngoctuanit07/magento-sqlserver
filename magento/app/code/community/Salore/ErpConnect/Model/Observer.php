@@ -35,7 +35,7 @@ class Salore_ErpConnect_Model_Observer {
     	
         $quote = Mage::getSingleton ( 'checkout/session' )->getQuote ();
         $order = $observer->getEvent ()->getOrder ();
-		$order->setData("created_at" , $this->_helper->formatDate($order->getCreatedAt ()));
+		//$order->setData("created_at" , $this->_helper->formatDate($order->getCreatedAt ()));
         $currency = $order->getRwrdCurrencyAmountInvoiced();
         $db = $this->_helper->getConnection ();
         $dataOrderHeader = array ();
