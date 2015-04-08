@@ -116,11 +116,17 @@ class Salore_ErpConnect_Model_Observer {
     		$productId = $item->getProductId ();
     		$product = Mage::getModel ( 'catalog/product' )->load ( $productId );
     		$taxClassId = $product->getTaxClassId ();
-    		$billingAddress = $order->getBillingAddress ()->getData ();
-    		$shippingAddress = $order->getShippingAddress ()->getData ();
+    		$billingAddress = $order->getBillingAddress ();
+    		if(isset($billingAddress) && $billingAddress ) {
+    			$billingAddress = $order->getBillingAddress ()->getData ();
+    		}
+    		$shippingAddress = $order->getShippingAddress ();
+    		if(isset($shippingAddress) && $shippingAddress ) {
+    			$shippingAddress = $order->getShippingAddress ()->getData ();
+    		}
     		$dataOrderHeader['MagSalesOrderNo'] = $order->getIncrementId ();
     		$dataOrderHeader['SalesOrderNo'] =  $this->_helper->prefixOrderNo($order->getId());
-		$dataOrderHeader['OrderDate'] = $this->_helper->formatDate($order->getCreatedAt ());
+			$dataOrderHeader['OrderDate'] = $this->_helper->formatDate($order->getCreatedAt ());
     		$dataOrderHeader['CustomerNo'] = $order->getCustomerId () ? $order->getCustomerId()  : ""  ;
     		$dataOrderHeader['BillToName'] = $this->_helper->getAddressField ( $billingAddress, $this->firstname ) . ' ' . $this->_helper->getAddressField ( $billingAddress, $this->lastname );
     		$dataOrderHeader['BillToAddress1'] =  $this->_helper->getAddressField ( $billingAddress, $this->street );
