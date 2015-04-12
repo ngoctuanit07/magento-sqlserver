@@ -74,15 +74,9 @@ class Salore_ErpConnect_Helper_Data extends Mage_Core_Helper_Abstract {
     	return $date;
     }
     public function isEnableCreateProduct() {
-    	if(Mage::getStoreConfig('sbmssql/create_product',Mage::app()->getStore())) {
-    		return true;
-    	}
-    	return false;
+    	return Mage::getStoreConfig('sbmssql/setting/create_product'); 
     }
     public function isEnableUpdateProduct() {
-    	if(Mage::getStoreConfig('sbmssql/update_product',Mage::app()->getStore())) {
-    		return true;
-    	}
-    	return false;
+    	return Mage::getStoreConfig('sbmssql/setting/update_product'); 
     }
 }	

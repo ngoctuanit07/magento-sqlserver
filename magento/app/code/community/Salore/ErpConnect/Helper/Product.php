@@ -14,39 +14,44 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
     /**
      * Import Product From Microsoft Sql to Magento
      */
+	protected  $flagCreateProduct = false;
+	protected $flagUpdateProduct = false;
+	
     public function import() {
         $connection = Mage::helper ( 'sberpconnect' )->getConnection ();
         $select = $connection->select ()->from ( 'tblItem' );
         $products = $connection->fetchAll ( $select );
        $dataProduct = array();
-//	print_r($products); die(); 
+       $optionCreateProduct  = Mage::helper('sberpconnect')->isEnableCreateProduct();
+       $optionUpdateProduct = Mage::helper('sberpconnect')->isEnableUpdateProduct();
+       if((int)$optionCreateProduct === 1 ) {
+       		$this->flagCreateProduct = true;
+       }
+       if((int)$optionUpdateProduct === 1) {
+       		$this->flagUpdateProduct = true;
+       }
 	foreach ( $products as $data ) {
-            if (!$this->isSkuExist($data ['SKU'])) {
-$this->createProduct ( $data );
-		 $this->updateSage($data, $dataProduct, $connection);
-            }else 
-		{
-	//	print_r($data); 
-            	$this->updateSage($data, $dataProduct, $connection);
-            }
+            	if($this->flagCreateProduct === true && $this->flagUpdateProduct === true ) {
+            		$this->createProduct ( $data );
+            		$this->updateProduct($data);
+            		continue;
+            	} 
+            	 if($this->flagCreateProduct === true && $this->flagUpdateProduct === false ) {
+            		$this->createProduct($data);
+            		$this->updateSage($data, $dataProduct, $connection);
+            		continue;
+            	} 
+            	if($this->flagCreateProduct === false && $this->flagUpdateProduct === true ) {
+            		$this->updateProduct($data);
+            		continue;
+            	} 
         }
     }
-	/*public function updateSage($data , &$dataProduct , &$connection) {
 	
-	$productCollection = Mage::getModel('catalog/product')->loadByAttribute('sku', $data ['SKU']);
-	$dataProduct['SentToMagento'] = $productCollection->getCreatedAt();
-    	$where = "SKU = " . $productCollection->getSku();
-    	$connection->update(static::TABLE_ITEM , $dataProduct , $where);
-    }*/
      public function updateSage($data , &$dataProduct , $connection) {
-	//die('abc');
     	$dataProduct['SentToMagento'] = $data ['DateAdded'];
-    //	$where = "SKU=" . '{$data ['SKU']}';
-	//$where = "SKU = ". '"'.$data['SKU'].'"';
-	//echo get_class($connection);
-	$where = "SKU = '{$data['SKU']}'";    	
-$connection->update("tblItem", $dataProduct , $where);
-
+			$where = "SKU = '{$data['SKU']}'";    	
+			$connection->update("tblItem", $dataProduct , $where);
     }
     /**
      * Check if product exists in magento
@@ -58,7 +63,6 @@ $connection->update("tblItem", $dataProduct , $where);
         $product = Mage::getModel('catalog/product')->loadByAttribute('sku', $sku);
         if ($product )
         {
-		//die('abc');
             return true;
         }
         return false;
@@ -106,6 +110,38 @@ $connection->update("tblItem", $dataProduct , $where);
         } catch ( Exception $e ) {
             Mage::log($e->getMessage(), null, 'erpconnection.log');
         }
+    }
+    public function updateProduct( $data) {
+    	$product = Mage::getModel('catalog/product')->loadByAttribute('sku',$data['SKU']);
+    	if (!$product) {//insert new product
+    		$product = Mage::getModel('catalog/product');
+    		$product->setSku($SKU);
+    	}
+    	$product->setAttributeSetId(4); // 4 means Default AttributeSet
+    	$product->setTypeId('simple');
+    	$product->setName($data ['SKU_Name']);
+    	$product->setCategoryIds(array(2,3,4,5,6,7));
+    	$product->setWebsiteIDs(array(1)); # Website id, 1 is default
+    	$product->setDescription((string)$XMLproduct->LongDescription);
+    	$product->setShortDescription((string)$XMLproduct->Description);
+    	$product->setPrice($data ['Price']);
+    	$product->setWeight(1.0);
+    	$product->setVisibility(Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH);
+    	$product->setStatus(1);
+    	$product->setTaxClassId(0); # My default tax class
+    	$product->setCreatedAt(date("m.d.y") );
+    	try {
+    		$product->save();
+    		$productId = $product->getId();
+    		$stockItem =Mage::getModel('cataloginventory/stock_item')->loadByProduct($productId);
+    		$stockItemId = $stockItem->getId();
+    		$stockItem->setData('manage_stock', 1);
+    		$stockItem->setData('qty', 99999);//(integer)$XMLproduct->QtyInStock
+    		$stockItem->save();
+    	}
+    	catch (Exception $e) {
+    		Mage::log($e->getMessage() , null , 'updateproduct.log');
+    	}
     }
 }
 
