@@ -16,7 +16,7 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
      */
 	protected  $flagCreateProduct = false;
 	protected $flagUpdateProduct = false;
-	
+	protected $flagUpdateInventory = false;
     public function import() {
         $connection = Mage::helper ( 'sberpconnect' )->getConnection ();
         $select = $connection->select ()->from ( 'tblItem' );
@@ -24,26 +24,47 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
        $dataProduct = array();
        $optionCreateProduct  = Mage::helper('sberpconnect')->isEnableCreateProduct();
        $optionUpdateProduct = Mage::helper('sberpconnect')->isEnableUpdateProduct();
+       $optionInvertoryProduct = Mage::helper('sberpconnect')->isEnableInventoryProduct();
        if((int)$optionCreateProduct === 1 ) {
        		$this->flagCreateProduct = true;
        }
        if((int)$optionUpdateProduct === 1) {
        		$this->flagUpdateProduct = true;
        }
+       if((int)$optionInvertoryProduct === 1) {
+       	$this->flagUpdateInventory = true;
+       }
+       if($this->flagCreateProduct === false && $this->flagUpdateProduct === false && $this->flagUpdateInventory === false) {
+       		return;
+       }
 	foreach ( $products as $data ) {
-            	if($this->flagCreateProduct === true && $this->flagUpdateProduct === true ) {
-            		$this->createProduct ( $data );
-            		$this->updateProduct($data);
-            		continue;
-            	} 
-            	 if($this->flagCreateProduct === true && $this->flagUpdateProduct === false ) {
-            		$this->createProduct($data);
-            		$this->updateSage($data, $dataProduct, $connection);
-            		continue;
+            	if($this->flagCreateProduct === true && $this->flagUpdateProduct === true  ) {
+					if(!$this->isSkuExist($data['SKU'])) {
+						$this->createProduct ( $data );
+						$this->updateSage($data, $dataProduct, $connection);
+						continue;
+					}  else {
+						Mage::log(print_r($data , true) , null , "update.log");
+						$this->updateProduct($data);
+						continue;
+					} 
+            	} if($this->flagCreateProduct === true && $this->flagUpdateProduct === false ) {
+            		if(!$this->isSkuExist($data['SKU'])) {
+            			$this->createProduct($data);
+            			$this->updateSage($data, $dataProduct, $connection);
+            			continue;
+            		} else {
+            			$this->updateSage($data, $dataProduct, $connection);
+            			continue;
+            		}
             	} 
             	if($this->flagCreateProduct === false && $this->flagUpdateProduct === true ) {
-            		$this->updateProduct($data);
-            		continue;
+					if($this->isSkuExist($data['SKU'])) {
+						$this->updateProduct($data);
+					} else {
+						return;
+						continue;
+					}
             	} 
         }
     }
@@ -61,11 +82,11 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
     public function isSkuExist($sku)
     {
         $product = Mage::getModel('catalog/product')->loadByAttribute('sku', $sku);
-        if ($product )
+        if ( !$product )
         {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
     public function createProduct($data) {
         $product = Mage::getModel ( 'catalog/product' );
@@ -96,48 +117,81 @@ class Salore_ErpConnect_Helper_Product extends Mage_Core_Helper_Abstract {
                     'values' => array () 
            			)
              )
-            ->setStockData ( array (
-                    'use_config_manage_stock' => 1,
-                    'manage_stock' => 1,
-                    'min_sale_qty' => 1,
-                    'max_sale_qty' => 2,
-                    'is_in_stock' => 1,
-                    'qty' => $data ['Qty']
-           		 ) 
-            )
-            ->setCategoryIds(array(3));
+             ->setCategoryIds(array(3));
+           
+            if($this->flagUpdateInventory ) {
+            	$productInventory = array(
+            			'use_config_manage_stock' => 1,
+            			'manage_stock' => 1,
+            			'min_sale_qty' => 1,
+            			'max_sale_qty' => 2,
+            			'qty' => (int) $data ['Qty']
+            			);
+            	if($data['Qty'] > 0) {
+            		$productInventory['is_in_stock'] = (int)1;
+            	} else {
+            		$productInventory['is_in_stock'] = (int)0;
+            		
+            	}
+            	$product->setStockData ( $productInventory);
+            	
+            } else  {
+            	$productInventory = array(
+            			'use_config_manage_stock' => 1,
+            			'manage_stock' => 1,
+            			'min_sale_qty' => 1,
+            			'max_sale_qty' => 2,
+            			'is_in_stock'  => 0,
+            			'qty' => 0,
+            			);
+            	
+            	$product->setStockData ( $productInventory);
+            }
+        
             $product->save ();
+        
         } catch ( Exception $e ) {
             Mage::log($e->getMessage(), null, 'erpconnection.log');
         }
     }
     public function updateProduct( $data) {
     	$product = Mage::getModel('catalog/product')->loadByAttribute('sku',$data['SKU']);
-    	if (!$product) {//insert new product
-    		$product = Mage::getModel('catalog/product');
-    		$product->setSku($SKU);
+    	if (!$product->getId()) {//insert new product
+    		$this->createProduct($data);
     	}
     	$product->setAttributeSetId(4); // 4 means Default AttributeSet
     	$product->setTypeId('simple');
     	$product->setName($data ['SKU_Name']);
     	$product->setCategoryIds(array(2,3,4,5,6,7));
     	$product->setWebsiteIDs(array(1)); # Website id, 1 is default
-    	$product->setDescription((string)$XMLproduct->LongDescription);
-    	$product->setShortDescription((string)$XMLproduct->Description);
+    	$product->setDescription( $data ['ShortDesc']);
+    	$product->setShortDescription( $data ['ShortDesc']);
     	$product->setPrice($data ['Price']);
     	$product->setWeight(1.0);
-    	$product->setVisibility(Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH);
+    	$product->setVisibility(Mage_Catalog_Model_Product_Visibility::VISIBILITY_IN_CATALOG);
     	$product->setStatus(1);
     	$product->setTaxClassId(0); # My default tax class
-    	$product->setCreatedAt(date("m.d.y") );
+    	$product->setCreatedAt($data ['DateAdded'] );
+    	
     	try {
     		$product->save();
     		$productId = $product->getId();
     		$stockItem =Mage::getModel('cataloginventory/stock_item')->loadByProduct($productId);
     		$stockItemId = $stockItem->getId();
-    		$stockItem->setData('manage_stock', 1);
-    		$stockItem->setData('qty', 99999);//(integer)$XMLproduct->QtyInStock
-    		$stockItem->save();
+    		if($this->flagUpdateInventory) {
+    			if($data['Qty'] < 0 ) {
+    				$stockItem->setData('manage_stock', 0);
+    			} else {
+    				$stockItem->setData('manage_stock', 1);
+    			}
+    			$stockItem->setData('qty', (int)$data['Qty']);//(integer)$XMLproduct->QtyInStock
+    			$stockItem->save();
+    		} else {
+    			$stockItem->setData('manage_stock', 0);
+    			$stockItem->setData('qty', 0);//(integer)$XMLproduct->QtyInStock
+    			$stockItem->save();
+    		}
+    		
     	}
     	catch (Exception $e) {
     		Mage::log($e->getMessage() , null , 'updateproduct.log');

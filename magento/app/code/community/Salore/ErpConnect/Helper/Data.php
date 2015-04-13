@@ -76,7 +76,7 @@ class Salore_ErpConnect_Helper_Data extends Mage_Core_Helper_Abstract {
     public function isEnableCreateProduct() {
     	return Mage::getStoreConfig('sbmssql/setting/create_product'); 
     }
-    public function isEnableUpdateProduct() {
-    	return Mage::getStoreConfig('sbmssql/setting/update_product'); 
+    public function isEnableInventoryProduct() {
+    	return Mage::getStoreConfig('sbmssql/setting/inventory_product'); 
     }
 }	
