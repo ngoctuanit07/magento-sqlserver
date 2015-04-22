@@ -119,10 +119,14 @@ class Salore_ErpConnect_Model_Observer {
     		$billingAddress = $order->getBillingAddress ();
     		if(isset($billingAddress) && $billingAddress ) {
     			$billingAddress = $order->getBillingAddress ()->getData ();
+    			$regionId =  $this->_helper->getAddressField ( $billingAddress, 'region_id' );
+    			$regionCode =  Mage::getModel('directory/region')->load($regionId)->getCode();
     		}
     		$shippingAddress = $order->getShippingAddress ();
     		if(isset($shippingAddress) && $shippingAddress ) {
     			$shippingAddress = $order->getShippingAddress ()->getData ();
+    			$regionId =  $this->_helper->getAddressField ( $shippingAddress, 'region_id' );
+    			$regionCode =  Mage::getModel('directory/region')->load($regionId)->getCode();
     		}
     		$dataOrderHeader['MagSalesOrderNo'] = $order->getIncrementId ();
     		$dataOrderHeader['SalesOrderNo'] =  $this->_helper->prefixOrderNo($order->getId());
@@ -131,13 +135,13 @@ class Salore_ErpConnect_Model_Observer {
     		$dataOrderHeader['BillToName'] = $this->_helper->getAddressField ( $billingAddress, $this->firstname ) . ' ' . $this->_helper->getAddressField ( $billingAddress, $this->lastname );
     		$dataOrderHeader['BillToAddress1'] =  $this->_helper->getAddressField ( $billingAddress, $this->street );
     		$dataOrderHeader['BillToCity'] = $this->_helper->getAddressField ( $billingAddress, 'city' );
-    		$dataOrderHeader['BillToState'] = $this->_helper->getAddressField ( $billingAddress, 'region' );
+    		$dataOrderHeader['BillToState'] = $regionCode;
     		$dataOrderHeader['BillToZipCode'] = $this->_helper->getAddressField ( $billingAddress, 'postcode' );
     		$dataOrderHeader['BillToCountryCode'] =  $billingAddress ['country_id'];
     		$dataOrderHeader['ShipToName'] = $this->_helper->getAddressField ( $shippingAddress, $this->firstname ) . ' ' . $this->_helper->getAddressField ( $shippingAddress, $this->lastname );
     		$dataOrderHeader['ShipToAddress1'] = $this->_helper->getAddressField ( $shippingAddress, $this->street );
     		$dataOrderHeader['ShipToCity'] = $this->_helper->getAddressField ( $shippingAddress, 'city' );
-    		$dataOrderHeader['ShipToState'] = $this->_helper->getAddressField ( $shippingAddress, 'region' );
+    		$dataOrderHeader['ShipToState'] = $regionCode;
     		$dataOrderHeader['ShipToZipCode'] = $this->_helper->getAddressField ( $shippingAddress, 'postcode' );
     		$dataOrderHeader['ShipToCountryCode'] = $this->_helper->getAddressField ( $shippingAddress, 'country_id' ); 
     		$dataOrderHeader ['ConfirmTo'] = $this->_helper->getAddressField ( $billingAddress, $this->firstname ) . ' ' . $this->_helper->getAddressField ( $billingAddress, $this->lastname );
