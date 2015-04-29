@@ -42,23 +42,22 @@ class Salore_ErpConnect_Model_Observer {
         $dataOrderDetail = array ();
         try {
         	$this->prepareDataForTableSalesOrderHeader($dataOrderHeader, $quote, $order);
-        	$this->prepareDataTaxAmtTableOrderHeader($order, $dataOrderHeader);
+        	//$this->prepareDataTaxAmtTableOrderHeader($order, $dataOrderHeader);
             $db->insert ( static::TABLE_SALES_ORDER_HEADER, $dataOrderHeader );
             $this->insertDataSalreOrderDetail($db, $order, $dataOrderDetail);
         } catch ( Exception $e ) {
              Mage::log($e->getMessage(), null, 'erpconnection.log');
         }
     }
-  protected function  prepareDataTaxAmtTableOrderHeader($order , &$dataOrderHeader) {
+  /*protected function  prepareDataTaxAmtTableOrderHeader($order , &$dataOrderHeader) {
     	$orderId = $order->getId();
     	$orderItems = $this->_helper->getItemIdFromOrder($orderId);
 		$taxableAmt = 0;
     	$nonTaxbleAmt = 0 ;
 		$taxAmt = 0;
     	foreach ($orderItems as $item) {
-    		
     		if($item['tax_amount'] > 0) {
-			$taxAmt +=$item['tax_amount'];     			
+				$taxAmt +=$item['tax_amount'];     			
     			$taxableAmt += $item['row_total'];
     		} else {
     			$nonTaxbleAmt += $item['row_total'];
@@ -69,10 +68,10 @@ class Salore_ErpConnect_Model_Observer {
 		} 
 		$dataOrderHeader['TaxableAmt'] = $taxableAmt;
 		$dataOrderHeader['NonTaxableAmt'] = $nonTaxbleAmt;
-    }
+    }*/
   	protected function insertDataSalreOrderDetail($db , $order , $dataOrderDetail ) {
 		$coupon = false;
-		$giftcard = false;
+		$giftcard = false;	
     	$orderId = $order->getId();
     	$orderIncrementId = $order->getIncrementId ();
     	$orderIncrement = Mage::getModel('sales/order')->loadByIncrementId($orderIncrementId);
@@ -86,14 +85,32 @@ class Salore_ErpConnect_Model_Observer {
 			$giftcard = true;
     		$this->checkGiftCardCode($giftcardcode, $dataOrderDetail);
     	}
-    	$dataOrderDetail['MagSalesOrderNo'] = $order->getIncrementId ();
+    	$dataOrderDetail['MagSalesOrderNo'] = $order->getIncrementId () ;
     	$dataOrderDetail['SalesOrderNo'] =  $this->_helper->prefixOrderNo($order->getId());
+  			
     	foreach ($orderItems as $item) {
-    		$dataOrderDetail['MagLineNo'] = $item['item_id'];
+			$dataOrderDetail['MagLineNo'] = $item['item_id'];
 			$dataOrderDetail ['QuantityOrdered'] = $item['qty_ordered'];
 			$dataOrderDetail ['QuantityBackordered'] = $item['qty_backordered'];
 			$dataOrderDetail ['LineWeight'] = $item['weight'];
-			$dataOrderDetail['DiscountAmt'] = $order->getDiscountAmount ();
+			$productId = $item['product_id'];
+			$finalPrice = $item['price'];
+			$productCollection = Mage::getModel('catalog/product')->load($productId);
+			$productPrice = $productCollection->getPrice();
+			if($productPrice > $finalPrice) {
+				$dataOrderDetail['DiscountAmt'] = ($productPrice - $finalPrice);
+			}else {
+				$dataOrderDetail['DiscountAmt'] = $order->getDiscountAmount ();
+			}
+			$productOption = unserialize($item['product_options']);
+			if(isset($productOption['info_buyRequest']) && count($productOption['info_buyRequest']) > 0) {
+				$option =  strcmp($productOption['info_buyRequest']['delivery-interval'] , "Monthly");
+				if((int) $option === 0) {
+					$dataOrderDetail ['DropShip'] = 'Y';
+				}else {
+					$dataOrderDetail ['DropShip'] = 'N';
+				}
+			}	
 			if(!$coupon && !$giftcard) {
 				$this->prepareDataAnyColumTableOrderDetail($item , $dataOrderDetail);		
 			}
@@ -105,8 +122,8 @@ class Salore_ErpConnect_Model_Observer {
     	}
     }
     protected function prepareDataAnyColumTableOrderDetail($item , &$dataOrderDetail) {
-    		$dataOrderDetail ['ItemCode'] = $item['sku'];
-    		$dataOrderDetail ['ItemCodeDesc'] =$item['name'];
+    		$dataOrderDetail ['ItemCode'] =  $item['sku'];
+    		$dataOrderDetail ['ItemCodeDesc'] = $item['name'];
     		$dataOrderDetail ['ExtensionAmt'] = $item['row_total'];
     }
     protected function prepareDataForTableSalesOrderHeader(&$dataOrderHeader , $quote , $order ) {
@@ -117,18 +134,24 @@ class Salore_ErpConnect_Model_Observer {
     		$product = Mage::getModel ( 'catalog/product' )->load ( $productId );
     		$taxClassId = $product->getTaxClassId ();
     		$billingAddress = $order->getBillingAddress ();
-    		if(isset($billingAddress) && $billingAddress ) {
-    			$billingAddress = $order->getBillingAddress ()->getData ();
-    			$regionId =  $this->_helper->getAddressField ( $billingAddress, 'region_id' );
-    			$regionCode =  Mage::getModel('directory/region')->load($regionId)->getCode();
-    		}
+			$customerGroupId = $order->getCustomerGroupId();
+			$customerTaxId = Mage::getModel('customer/group')->load($customerGroupId)->getTaxClassId();
+			$tax = Mage::getModel('tax/calculation');
+			$taxClassId= $tax->load($customerTaxId, 'customer_tax_class_id')->getCustomerTaxClassId();
+			$taxClass = Mage::getModel('tax/class')->load($taxClassId);
+			$taxCodeName = $taxClass->getOpAvataxCode();
+			if(isset($billingAddress) && $billingAddress ) {
+					$billingAddress = $order->getBillingAddress ()->getData ();
+				$regionId =  $this->_helper->getAddressField ( $billingAddress, 'region_id' );
+				$regionCode =  Mage::getModel('directory/region')->load($regionId)->getCode();
+			}
     		$shippingAddress = $order->getShippingAddress ();
     		if(isset($shippingAddress) && $shippingAddress ) {
     			$shippingAddress = $order->getShippingAddress ()->getData ();
-    			$regionId =  $this->_helper->getAddressField ( $shippingAddress, 'region_id' );
-    			$regionCode =  Mage::getModel('directory/region')->load($regionId)->getCode();
+			$regionId =  $this->_helper->getAddressField (  $shippingAddress, 'region_id' );
+			$regionCode =  Mage::getModel('directory/region')->load($regionId)->getCode();
     		}
-    		$dataOrderHeader['MagSalesOrderNo'] = $order->getIncrementId ();
+			$dataOrderHeader['MagSalesOrderNo'] = $order->getIncrementId () ;
     		$dataOrderHeader['SalesOrderNo'] =  $this->_helper->prefixOrderNo($order->getId());
 			$dataOrderHeader['OrderDate'] = $this->_helper->formatDate($order->getCreatedAt ());
     		$dataOrderHeader['CustomerNo'] = $order->getCustomerId () ? $order->getCustomerId()  : ""  ;
@@ -141,18 +164,38 @@ class Salore_ErpConnect_Model_Observer {
     		$dataOrderHeader['ShipToName'] = $this->_helper->getAddressField ( $shippingAddress, $this->firstname ) . ' ' . $this->_helper->getAddressField ( $shippingAddress, $this->lastname );
     		$dataOrderHeader['ShipToAddress1'] = $this->_helper->getAddressField ( $shippingAddress, $this->street );
     		$dataOrderHeader['ShipToCity'] = $this->_helper->getAddressField ( $shippingAddress, 'city' );
-    		$dataOrderHeader['ShipToState'] = $regionCode;
+    		$dataOrderHeader['ShipToState'] =  $regionCode;
     		$dataOrderHeader['ShipToZipCode'] = $this->_helper->getAddressField ( $shippingAddress, 'postcode' );
     		$dataOrderHeader['ShipToCountryCode'] = $this->_helper->getAddressField ( $shippingAddress, 'country_id' ); 
     		$dataOrderHeader ['ConfirmTo'] = $this->_helper->getAddressField ( $billingAddress, $this->firstname ) . ' ' . $this->_helper->getAddressField ( $billingAddress, $this->lastname );
     		// still not sure assign it to default "NA"
-    		$dataOrderHeader ['TaxSchedule'] = 'NA';
+    		//$dataOrderHeader ['TaxSchedule'] = $taxCodeName;
     		$dataOrderHeader ['EmailAddress'] = $order->getCustomerEmail ();
     		$grandTotal = $order->getGrandTotal ();
     		$taxAmount  = Mage::helper('checkout')->getQuote()->getShippingAddress()->getData('tax_amount');
     		//$dataOrderHeader['TaxableAmt'] = ($dataOrderHeader['TaxSchedule'] === "AVATAX") ? ($grandTotal - $taxAmount ) : "0"; 
     		//$dataOrderHeader ['NonTaxableAmt'] = ($dataOrderHeader['TaxSchedule'] === "NA") ? $grandTotal : "0";
-    		//$dataOrderHeader ['SalesTaxAmt'] = Mage::helper('checkout')->getQuote()->getShippingAddress()->getData('tax_amount');
+    		  if( $taxAmount > 0) {
+
+                                 $dataOrderHeader ['TaxSchedule'] = 'AVATAX' ;
+                        } else {
+                                 $dataOrderHeader ['TaxSchedule'] = 'NA' ;
+            }
+			$taxablAmt =  strcmp($dataOrderHeader['TaxSchedule'] , "AVATAX");
+            $nontaxbAmt = strcmp($dataOrderHeader['TaxSchedule'] , "NA");
+            if((int) $taxablAmt === 0) {
+                    $dataOrderHeader['TaxableAmt'] =  Mage::helper('core')->formatPrice(($grandTotal - $taxAmount), false);
+
+            } else {
+                    $dataOrderHeader['TaxableAmt'] =  0;
+            }
+            if((int) $nontaxbAmt === 0) {
+                    $dataOrderHeader['NonTaxableAmt'] =  $grandTotal ;
+            } else {
+                        $dataOrderHeader['NonTaxableAmt'] =  0 ;
+            }
+
+			$dataOrderHeader ['SalesTaxAmt'] = Mage::helper('checkout')->getQuote()->getShippingAddress()->getData('tax_amount');
     		$dataOrderHeader ['DepositAmt'] = $order->getGrandTotal ();
     		$dataOrderHeader ['CustomerPONo'] = $order->getIncrementId ();
     		$dataOrderHeader ['FreightAmt'] = $order->getShippingAmount();
@@ -290,4 +333,5 @@ class Salore_ErpConnect_Model_Observer {
     //	Mage::helper('sberpconnect/customer')->import();
     }
 }
+
 
