@@ -131,6 +131,7 @@ class Salore_ErpConnect_Model_Observer {
     	$cartItems = $quote->getAllVisibleItems ();
     	foreach($cartItems as $item) {
     		$productId = $item->getProductId ();
+    		Mage::getSingleton('core/session')->setProductId($productId);
     		$product = Mage::getModel ( 'catalog/product' )->load ( $productId );
     		$taxClassId = $product->getTaxClassId ();
     		$billingAddress = $order->getBillingAddress ();
@@ -151,7 +152,7 @@ class Salore_ErpConnect_Model_Observer {
 			$regionId =  $this->_helper->getAddressField (  $shippingAddress, 'region_id' );
 			$regionCode =  Mage::getModel('directory/region')->load($regionId)->getCode();
     		}
-			$dataOrderHeader['MagSalesOrderNo'] = $order->getIncrementId () ;
+			$dataOrderHeader['MagSalesOrderNo'] = $order->getIncrementId ();
     		$dataOrderHeader['SalesOrderNo'] =  $this->_helper->prefixOrderNo($order->getId());
 			$dataOrderHeader['OrderDate'] = $this->_helper->formatDate($order->getCreatedAt ());
     		$dataOrderHeader['CustomerNo'] = $order->getCustomerId () ? $order->getCustomerId()  : ""  ;
@@ -176,7 +177,6 @@ class Salore_ErpConnect_Model_Observer {
     		//$dataOrderHeader['TaxableAmt'] = ($dataOrderHeader['TaxSchedule'] === "AVATAX") ? ($grandTotal - $taxAmount ) : "0"; 
     		//$dataOrderHeader ['NonTaxableAmt'] = ($dataOrderHeader['TaxSchedule'] === "NA") ? $grandTotal : "0";
     		  if( $taxAmount > 0) {
-
                                  $dataOrderHeader ['TaxSchedule'] = 'AVATAX' ;
                         } else {
                                  $dataOrderHeader ['TaxSchedule'] = 'NA' ;
@@ -257,23 +257,33 @@ class Salore_ErpConnect_Model_Observer {
     	$currencyAmt = $order->getRwrdCurrencyAmountInvoiced();
     	$qty = $order->getDiscountAmount ();
     	$orderId = $order->getId();
+    	$productId = Mage::getSingleton('core/session')->getProductId();
+    	$productCollection = Mage::getModel('catalog/product')->load($productId);
+    	$price = $productCollection->getPrice();
     	if(empty($couponCode)) {
     		return;
     	}  else {
     		$couponPregMatch = (int)preg_match('/^ECENTER[0-9]{1,}$/',strtoupper($couponCode));
     		if(($couponPregMatch == 1) && (is_null($currencyAmt))) {
-    			$dataOrderDetail ['ItemCode'] = "/ECENTER COUPON";
+    			
+    			//$dataOrderDetail ['ItemCode'] = "/ECENTER COUPON";
+    			$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
     			$dataOrderDetail ['UnitOfMeasure'] = "DOL";
-    			$dataOrderDetail ['ItemCodeDesc'] = "{$couponCode}";
-			$dataOrderDetail ['Discount'] = $dataOrderDetail['ItemCode'];
-    			$dataOrderDetail ['ExtensionAmt'] = ($qty * 1);
+    			//$dataOrderDetail ['ItemCodeDesc'] = "{$couponCode}";
+    			$dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
+				//$dataOrderDetail ['Discount'] = $dataOrderDetail['ItemCode'];
+    			$dataOrderDetail ['Discount']   = $couponCode;
+    			//$dataOrderDetail ['ExtensionAmt'] = ($qty * 1);
+    			$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
     		}
     		if(($couponPregMatch ==0) && (is_null($currencyAmt))) {
-    			$dataOrderDetail ['ItemCode'] = 'COUPON';
+    			//$dataOrderDetail ['ItemCode'] = 'COUPON';
     			$dataOrderDetail ['UnitOfMeasure'] = 'DOL';
-			$dataOrderDetail ['Discount'] = $dataOrderDetail['ItemCode'];
-    			$dataOrderDetail ['ItemCodeDesc'] = "contents of"."{$couponCode}";
-    			$dataOrderDetail ['ExtensionAmt'] = ($qty * 1);
+			//	$dataOrderDetail ['Discount'] = $dataOrderDetail['ItemCode'];
+    			$dataOrderDetail ['Discount']   = $couponCode;
+    			$dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
+    			//$dataOrderDetail ['ItemCodeDesc'] = "contents of"."{$couponCode}";
+    			$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
     		}
     		if(isset($currencyAmt) && $currencyAmt > 0) {
     			$dataOrderDetail ['ItemCode'] = "/REWARDS POINTS";
