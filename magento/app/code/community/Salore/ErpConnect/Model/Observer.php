@@ -35,40 +35,19 @@ class Salore_ErpConnect_Model_Observer {
     	
         $quote = Mage::getSingleton ( 'checkout/session' )->getQuote ();
         $order = $observer->getEvent ()->getOrder ();
-		//$order->setData("created_at" , $this->_helper->formatDate($order->getCreatedAt ()));
         $currency = $order->getRwrdCurrencyAmountInvoiced();
         $db = $this->_helper->getConnection ();
         $dataOrderHeader = array ();
         $dataOrderDetail = array ();
         try {
         	$this->prepareDataForTableSalesOrderHeader($dataOrderHeader, $quote, $order);
-        	//$this->prepareDataTaxAmtTableOrderHeader($order, $dataOrderHeader);
+        	Mage::log(print_r($dataOrderHeader , true) , null , "waynele3.log");
             $db->insert ( static::TABLE_SALES_ORDER_HEADER, $dataOrderHeader );
             $this->insertDataSalreOrderDetail($db, $order, $dataOrderDetail);
         } catch ( Exception $e ) {
              Mage::log($e->getMessage(), null, 'erpconnection.log');
         }
     }
-  /*protected function  prepareDataTaxAmtTableOrderHeader($order , &$dataOrderHeader) {
-    	$orderId = $order->getId();
-    	$orderItems = $this->_helper->getItemIdFromOrder($orderId);
-		$taxableAmt = 0;
-    	$nonTaxbleAmt = 0 ;
-		$taxAmt = 0;
-    	foreach ($orderItems as $item) {
-    		if($item['tax_amount'] > 0) {
-				$taxAmt +=$item['tax_amount'];     			
-    			$taxableAmt += $item['row_total'];
-    		} else {
-    			$nonTaxbleAmt += $item['row_total'];
-    		}
-    	}
-		if($taxAmt > 0) {
-			$dataOrderHeader['SalesTaxAmt'] = $taxAmt;
-		} 
-		$dataOrderHeader['TaxableAmt'] = $taxableAmt;
-		$dataOrderHeader['NonTaxableAmt'] = $nonTaxbleAmt;
-    }*/
   	protected function insertDataSalreOrderDetail($db , $order , $dataOrderDetail ) {
 		$coupon = false;
 		$giftcard = false;	
@@ -79,13 +58,12 @@ class Salore_ErpConnect_Model_Observer {
     	$couponCode = $orderIncrement->getData('coupon_code');
     	$orderItems  = $this->_helper->getItemIdFromOrder($orderId);
     	if(isset($couponCode) && $couponCode) {
-			$coupon = true;
-    		$this->checkCouponCode($couponCode, $dataOrderDetail, $order);
+    		$coupon = true;
     	}elseif(is_array($giftcardcode) && count($giftcardcode)) {
-			$giftcard = true;
+    		$giftcard = true;
     		$this->checkGiftCardCode($giftcardcode, $dataOrderDetail);
     	}
-    	$dataOrderDetail['MagSalesOrderNo'] = $order->getIncrementId () ;
+    	$dataOrderDetail['MagSalesOrderNo'] = $order->getIncrementId () +3000;
     	$dataOrderDetail['SalesOrderNo'] =  $this->_helper->prefixOrderNo($order->getId());
   			
     	foreach ($orderItems as $item) {
@@ -102,6 +80,9 @@ class Salore_ErpConnect_Model_Observer {
 			}else {
 				$dataOrderDetail['DiscountAmt'] = $order->getDiscountAmount ();
 			}
+			if($coupon === true) {
+				$this->checkCouponCode($couponCode, $dataOrderDetail, $order , $item);
+			}
 			$productOption = unserialize($item['product_options']);
 			if(isset($productOption['info_buyRequest']) && count($productOption['info_buyRequest']) > 0) {
 				$option =  strcmp($productOption['info_buyRequest']['delivery-interval'] , "Monthly");
@@ -115,6 +96,7 @@ class Salore_ErpConnect_Model_Observer {
 				$this->prepareDataAnyColumTableOrderDetail($item , $dataOrderDetail);		
 			}
     		try {
+    			Mage::log(print_r($dataOrderDetail , true) , null , "waynele3.log");
     			$db->insert(static::TABLE_SALES_ORDER_DETAIL, $dataOrderDetail);
     		} catch ( Exception $e ) {
     			Mage::log($e->getMessage(), null, 'erpconnection.log');
@@ -152,7 +134,7 @@ class Salore_ErpConnect_Model_Observer {
 			$regionId =  $this->_helper->getAddressField (  $shippingAddress, 'region_id' );
 			$regionCode =  Mage::getModel('directory/region')->load($regionId)->getCode();
     		}
-			$dataOrderHeader['MagSalesOrderNo'] = $order->getIncrementId ();
+			$dataOrderHeader['MagSalesOrderNo'] = $order->getIncrementId () +3000;
     		$dataOrderHeader['SalesOrderNo'] =  $this->_helper->prefixOrderNo($order->getId());
 			$dataOrderHeader['OrderDate'] = $this->_helper->formatDate($order->getCreatedAt ());
     		$dataOrderHeader['CustomerNo'] = $order->getCustomerId () ? $order->getCustomerId()  : ""  ;
@@ -170,12 +152,9 @@ class Salore_ErpConnect_Model_Observer {
     		$dataOrderHeader['ShipToCountryCode'] = $this->_helper->getAddressField ( $shippingAddress, 'country_id' ); 
     		$dataOrderHeader ['ConfirmTo'] = $this->_helper->getAddressField ( $billingAddress, $this->firstname ) . ' ' . $this->_helper->getAddressField ( $billingAddress, $this->lastname );
     		// still not sure assign it to default "NA"
-    		//$dataOrderHeader ['TaxSchedule'] = $taxCodeName;
     		$dataOrderHeader ['EmailAddress'] = $order->getCustomerEmail ();
     		$grandTotal = $order->getGrandTotal ();
     		$taxAmount  = Mage::helper('checkout')->getQuote()->getShippingAddress()->getData('tax_amount');
-    		//$dataOrderHeader['TaxableAmt'] = ($dataOrderHeader['TaxSchedule'] === "AVATAX") ? ($grandTotal - $taxAmount ) : "0"; 
-    		//$dataOrderHeader ['NonTaxableAmt'] = ($dataOrderHeader['TaxSchedule'] === "NA") ? $grandTotal : "0";
     		  if( $taxAmount > 0) {
                                  $dataOrderHeader ['TaxSchedule'] = 'AVATAX' ;
                         } else {
@@ -249,40 +228,32 @@ class Salore_ErpConnect_Model_Observer {
     }
     protected function setOrderShipmentSaveAfter($order , &$dataOrderHeader ) {
     	foreach($order->getShipmentsCollection() as $shipment) {
-    		// Tempority use shipped date , need to correct this later
     		$dataOrderHeader ['ShipExpireDate'] = $shipment->getCreatedAt();
     	}
     }
-    protected function checkCouponCode($couponCode , &$dataOrderDetail , $order) {
+    protected function checkCouponCode($couponCode , &$dataOrderDetail , $order , $item) {
     	$currencyAmt = $order->getRwrdCurrencyAmountInvoiced();
-    	$qty = $order->getDiscountAmount ();
+    	$qty = $item['qty_ordered'];
     	$orderId = $order->getId();
-    	$productId = Mage::getSingleton('core/session')->getProductId();
-    	$productCollection = Mage::getModel('catalog/product')->load($productId);
-    	$price = $productCollection->getPrice();
+    	$productCollection = Mage::getModel('catalog/product')->load($item['product_id']);
+    	$price = $item['price'];
     	if(empty($couponCode)) {
     		return;
     	}  else {
     		$couponPregMatch = (int)preg_match('/^ECENTER[0-9]{1,}$/',strtoupper($couponCode));
     		if(($couponPregMatch == 1) && (is_null($currencyAmt))) {
-    			
-    			//$dataOrderDetail ['ItemCode'] = "/ECENTER COUPON";
     			$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
     			$dataOrderDetail ['UnitOfMeasure'] = "DOL";
-    			//$dataOrderDetail ['ItemCodeDesc'] = "{$couponCode}";
     			$dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
-				//$dataOrderDetail ['Discount'] = $dataOrderDetail['ItemCode'];
     			$dataOrderDetail ['Discount']   = $couponCode;
-    			//$dataOrderDetail ['ExtensionAmt'] = ($qty * 1);
     			$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
     		}
     		if(($couponPregMatch ==0) && (is_null($currencyAmt))) {
-    			//$dataOrderDetail ['ItemCode'] = 'COUPON';
+    			$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
     			$dataOrderDetail ['UnitOfMeasure'] = 'DOL';
-			//	$dataOrderDetail ['Discount'] = $dataOrderDetail['ItemCode'];
     			$dataOrderDetail ['Discount']   = $couponCode;
     			$dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
-    			//$dataOrderDetail ['ItemCodeDesc'] = "contents of"."{$couponCode}";
+    			$dataOrderDetail ['ItemCodeDesc'] = "contents of"."{$couponCode}";
     			$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
     		}
     		if(isset($currencyAmt) && $currencyAmt > 0) {
