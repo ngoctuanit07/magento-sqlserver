@@ -20,3 +20,6 @@ Example:
 				</connection>
 7. Clear all magento caches and test new order 
 			
+			
+UBUNTU INSTALL MSSQL PHP DRIVER
+apt-get install php5-sybase php5-odbc freetds-common
