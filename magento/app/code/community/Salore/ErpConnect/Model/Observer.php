@@ -41,7 +41,6 @@ class Salore_ErpConnect_Model_Observer {
         $dataOrderDetail = array ();
         try {
         	$this->prepareDataForTableSalesOrderHeader($dataOrderHeader, $quote, $order);
-        	Mage::log(print_r($dataOrderHeader , true) , null , "waynele3.log");
             $db->insert ( static::TABLE_SALES_ORDER_HEADER, $dataOrderHeader );
             $this->insertDataSalreOrderDetail($db, $order, $dataOrderDetail);
         } catch ( Exception $e ) {
@@ -63,7 +62,7 @@ class Salore_ErpConnect_Model_Observer {
     		$giftcard = true;
     		$this->checkGiftCardCode($giftcardcode, $dataOrderDetail);
     	}
-    	$dataOrderDetail['MagSalesOrderNo'] = $order->getIncrementId () +3000;
+    	$dataOrderDetail['MagSalesOrderNo'] = $order->getIncrementId () ;
     	$dataOrderDetail['SalesOrderNo'] =  $this->_helper->prefixOrderNo($order->getId());
   			
     	foreach ($orderItems as $item) {
@@ -75,7 +74,9 @@ class Salore_ErpConnect_Model_Observer {
 			$finalPrice = $item['price'];
 			$productCollection = Mage::getModel('catalog/product')->load($productId);
 			$productPrice = $productCollection->getPrice();
-			if($productPrice > $finalPrice) {
+			if((int)$finalPrice === 0) {
+				$dataOrderDetail['DiscountAmt'] = 0;
+			}elseif($productPrice > $finalPrice) {
 				$dataOrderDetail['DiscountAmt'] = ($productPrice - $finalPrice);
 			}else {
 				$dataOrderDetail['DiscountAmt'] = $order->getDiscountAmount ();
@@ -96,7 +97,6 @@ class Salore_ErpConnect_Model_Observer {
 				$this->prepareDataAnyColumTableOrderDetail($item , $dataOrderDetail);		
 			}
     		try {
-    			Mage::log(print_r($dataOrderDetail , true) , null , "waynele3.log");
     			$db->insert(static::TABLE_SALES_ORDER_DETAIL, $dataOrderDetail);
     		} catch ( Exception $e ) {
     			Mage::log($e->getMessage(), null, 'erpconnection.log');
@@ -134,7 +134,7 @@ class Salore_ErpConnect_Model_Observer {
 			$regionId =  $this->_helper->getAddressField (  $shippingAddress, 'region_id' );
 			$regionCode =  Mage::getModel('directory/region')->load($regionId)->getCode();
     		}
-			$dataOrderHeader['MagSalesOrderNo'] = $order->getIncrementId () +3000;
+			$dataOrderHeader['MagSalesOrderNo'] = $order->getIncrementId ();
     		$dataOrderHeader['SalesOrderNo'] =  $this->_helper->prefixOrderNo($order->getId());
 			$dataOrderHeader['OrderDate'] = $this->_helper->formatDate($order->getCreatedAt ());
     		$dataOrderHeader['CustomerNo'] = $order->getCustomerId () ? $order->getCustomerId()  : ""  ;
@@ -228,34 +228,53 @@ class Salore_ErpConnect_Model_Observer {
     }
     protected function setOrderShipmentSaveAfter($order , &$dataOrderHeader ) {
     	foreach($order->getShipmentsCollection() as $shipment) {
+    		// Tempority use shipped date , need to correct this later
     		$dataOrderHeader ['ShipExpireDate'] = $shipment->getCreatedAt();
     	}
     }
-    protected function checkCouponCode($couponCode , &$dataOrderDetail , $order , $item) {
+    protected function checkCouponCode($couponCode , &$dataOrderDetail , $order , &$item) {
     	$currencyAmt = $order->getRwrdCurrencyAmountInvoiced();
-    	$qty = $item['qty_ordered'];
+    	$qty = $item['qty_ordered'];		
     	$orderId = $order->getId();
     	$productCollection = Mage::getModel('catalog/product')->load($item['product_id']);
-    	$price = $item['price'];
-    	if(empty($couponCode)) {
+    	$price = $item['price'];	     
+	if(empty($couponCode)) {
     		return;
     	}  else {
     		$couponPregMatch = (int)preg_match('/^ECENTER[0-9]{1,}$/',strtoupper($couponCode));
     		if(($couponPregMatch == 1) && (is_null($currencyAmt))) {
-    			$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
-    			$dataOrderDetail ['UnitOfMeasure'] = "DOL";
-    			$dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
-    			$dataOrderDetail ['Discount']   = $couponCode;
-    			$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
+    			if((int) $price === 0 ) {
+					$dataOrderDetail ['Discount']   = '';
+					$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
+            	    $dataOrderDetail ['UnitOfMeasure'] = "DOL";
+                    $dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
+					$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
+
+			}else {
+					$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
+    				$dataOrderDetail ['UnitOfMeasure'] = "DOL";
+    				$dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
+    				$dataOrderDetail ['Discount']   = $couponCode;
+    				$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
+			}
     		}
     		if(($couponPregMatch ==0) && (is_null($currencyAmt))) {
+		 	if((int) $price === 0 ) {
+                                        $dataOrderDetail ['Discount']   = '';
+                                        $dataOrderDetail ['ItemCode'] = $productCollection->getSku();
+                                        $dataOrderDetail ['UnitOfMeasure'] = "DOL";
+                                        $dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
+                                        $dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
+
+                        }else {
+
     			$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
     			$dataOrderDetail ['UnitOfMeasure'] = 'DOL';
     			$dataOrderDetail ['Discount']   = $couponCode;
     			$dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
-    			$dataOrderDetail ['ItemCodeDesc'] = "contents of"."{$couponCode}";
     			$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
     		}
+		}
     		if(isset($currencyAmt) && $currencyAmt > 0) {
     			$dataOrderDetail ['ItemCode'] = "/REWARDS POINTS";
     			$dataOrderDetail ['UnitOfMeasure'] = "DOL";
@@ -314,5 +333,6 @@ class Salore_ErpConnect_Model_Observer {
     //	Mage::helper('sberpconnect/customer')->import();
     }
 }
+
 
 
