@@ -246,13 +246,13 @@ class Salore_ErpConnect_Model_Observer {
     			if((int) $price === 0 ) {
 					$dataOrderDetail ['Discount']   = '';
 					$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
-            	    $dataOrderDetail ['UnitOfMeasure'] = "DOL";
+            	    $dataOrderDetail ['UnitOfMeasure'] = "EACH";
                     $dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
 					$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
 
 			}else {
 					$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
-    				$dataOrderDetail ['UnitOfMeasure'] = "DOL";
+    				$dataOrderDetail ['UnitOfMeasure'] = "EACH";
     				$dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
     				$dataOrderDetail ['Discount']   = $couponCode;
     				$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
@@ -262,14 +262,13 @@ class Salore_ErpConnect_Model_Observer {
 		 	if((int) $price === 0 ) {
                                         $dataOrderDetail ['Discount']   = '';
                                         $dataOrderDetail ['ItemCode'] = $productCollection->getSku();
-                                        $dataOrderDetail ['UnitOfMeasure'] = "DOL";
+                                        $dataOrderDetail ['UnitOfMeasure'] = "EACH";
                                         $dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
                                         $dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
-
                         }else {
 
     			$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
-    			$dataOrderDetail ['UnitOfMeasure'] = 'DOL';
+    			$dataOrderDetail ['UnitOfMeasure'] = 'EACH';
     			$dataOrderDetail ['Discount']   = $couponCode;
     			$dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
     			$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
@@ -277,7 +276,7 @@ class Salore_ErpConnect_Model_Observer {
 		}
     		if(isset($currencyAmt) && $currencyAmt > 0) {
     			$dataOrderDetail ['ItemCode'] = "/REWARDS POINTS";
-    			$dataOrderDetail ['UnitOfMeasure'] = "DOL";
+    			$dataOrderDetail ['UnitOfMeasure'] = "EACH";
 			$dataOrderDetail ['Discount'] = $dataOrderDetail['ItemCode'];
     			$dataOrderDetail ['ItemCodeDesc'] = "Rewards Points";
     			$dataOrderDetail ['ExtensionAmt'] = ($currencyAmt * (-1));
@@ -288,7 +287,7 @@ class Salore_ErpConnect_Model_Observer {
     	foreach ($giftcardcode as $card ) {
     		if(isset( $card['c']) &&  $card['c']) {
     			$dataOrderDetail ['ItemCode'] = "/GIFT CARD";
-    			$dataOrderDetail ['UnitOfMeasure'] = "DOL";
+    			$dataOrderDetail ['UnitOfMeasure'] = "EACH";
     			$dataOrderDetail ['ItemCodeDesc'] = "to be determined";
     		}
     	}
