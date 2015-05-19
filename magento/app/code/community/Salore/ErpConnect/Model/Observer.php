@@ -164,7 +164,6 @@ class Salore_ErpConnect_Model_Observer {
             $nontaxbAmt = strcmp($dataOrderHeader['TaxSchedule'] , "NA");
             if((int) $taxablAmt === 0) {
                     $dataOrderHeader['TaxableAmt'] =  Mage::helper('core')->formatPrice(($grandTotal - $taxAmount), false);
-
             } else {
                     $dataOrderHeader['TaxableAmt'] =  0;
             }
@@ -247,13 +246,13 @@ class Salore_ErpConnect_Model_Observer {
 					$dataOrderDetail ['Discount']   = '';
 					$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
             	    $dataOrderDetail ['UnitOfMeasure'] = "EACH";
-                    $dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
+                    $dataOrderDetail ['ItemCodeDesc'] = $item['name'];
 					$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
 
 			}else {
 					$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
     				$dataOrderDetail ['UnitOfMeasure'] = "EACH";
-    				$dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
+    				$dataOrderDetail ['ItemCodeDesc'] = $item['name'];
     				$dataOrderDetail ['Discount']   = $couponCode;
     				$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
 			}
@@ -263,14 +262,14 @@ class Salore_ErpConnect_Model_Observer {
                                         $dataOrderDetail ['Discount']   = '';
                                         $dataOrderDetail ['ItemCode'] = $productCollection->getSku();
                                         $dataOrderDetail ['UnitOfMeasure'] = "EACH";
-                                        $dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
+                                        $dataOrderDetail ['ItemCodeDesc'] = $item['name'];
                                         $dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
                         }else {
 
     			$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
     			$dataOrderDetail ['UnitOfMeasure'] = 'EACH';
     			$dataOrderDetail ['Discount']   = $couponCode;
-    			$dataOrderDetail ['ItemCodeDesc'] = $productCollection->getDescription();
+    			$dataOrderDetail ['ItemCodeDesc'] = $item['name'];
     			$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
     		}
 		}
@@ -279,7 +278,7 @@ class Salore_ErpConnect_Model_Observer {
     			$dataOrderDetail ['UnitOfMeasure'] = "EACH";
 			$dataOrderDetail ['Discount'] = $dataOrderDetail['ItemCode'];
     			$dataOrderDetail ['ItemCodeDesc'] = "Rewards Points";
-    			$dataOrderDetail ['ExtensionAmt'] = ($currencyAmt * (-1));
+    			$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
     		}
     	}
     }
@@ -332,6 +331,3 @@ class Salore_ErpConnect_Model_Observer {
     //	Mage::helper('sberpconnect/customer')->import();
     }
 }
-
-
-
