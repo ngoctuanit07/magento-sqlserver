@@ -155,7 +155,7 @@ class Salore_ErpConnect_Model_Observer {
     		$dataOrderHeader ['EmailAddress'] = $order->getCustomerEmail ();
     		$grandTotal = $order->getGrandTotal ();
     		$taxAmount  = Mage::helper('checkout')->getQuote()->getShippingAddress()->getData('tax_amount');
-    		  if( $taxAmount > 0) {
+    		  if( $taxAmount > 0 ) {
                                  $dataOrderHeader ['TaxSchedule'] = 'AVATAX' ;
                         } else {
                                  $dataOrderHeader ['TaxSchedule'] = 'NA' ;
