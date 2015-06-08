@@ -116,6 +116,8 @@ class Salore_ErpConnect_Model_Observer {
     	$cartItems = $quote->getAllVisibleItems ();
     	foreach($cartItems as $item) {
     		$productId = $item->getProductId ();
+    		$orderId = $order->getId();
+    		$taxOrder  = $this->_helper->getTaxFromOrder($orderId);
     		Mage::getSingleton('core/session')->setProductId($productId);
     		$product = Mage::getModel ( 'catalog/product' )->load ( $productId );
     		$taxClassId = $product->getTaxClassId ();
@@ -176,7 +178,7 @@ class Salore_ErpConnect_Model_Observer {
                         $dataOrderHeader['NonTaxableAmt'] =  0 ;
             }
 
-			$dataOrderHeader ['SalesTaxAmt'] = Mage::helper('checkout')->getQuote()->getShippingAddress()->getData('tax_amount');
+			$dataOrderHeader ['SalesTaxAmt'] = $taxOrder;
     		$dataOrderHeader ['DepositAmt'] = $order->getGrandTotal ();
     		$dataOrderHeader ['CustomerPONo'] = $order->getIncrementId ();
     		$dataOrderHeader ['FreightAmt'] = $order->getShippingAmount();

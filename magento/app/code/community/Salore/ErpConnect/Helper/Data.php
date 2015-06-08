@@ -82,4 +82,13 @@ class Salore_ErpConnect_Helper_Data extends Mage_Core_Helper_Abstract {
     public function isEnableInventoryProduct() {
     	return Mage::getStoreConfig('sbmssql/setting/inventory_product');
     }
+    public function getTaxFromOrder( $orderId ) {
+    	$tax = '' ;
+    	$orderCollection = Mage::getModel('sales/order')->load($orderId);
+    	$orderItem = $orderCollection->getAllItems();
+    	foreach ($orderItem as $item) {
+    		$tax = $item->getTaxAmount();
+    	}
+    	return $tax;
+    }
 }	
