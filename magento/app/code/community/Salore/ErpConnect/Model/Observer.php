@@ -66,6 +66,7 @@ class Salore_ErpConnect_Model_Observer {
     	$dataOrderDetail['SalesOrderNo'] =  $this->_helper->prefixOrderNo($order->getId());
   			
     	foreach ($orderItems as $item) {
+    		
 			$dataOrderDetail['MagLineNo'] = $item['item_id'];
 			$dataOrderDetail ['QuantityOrdered'] = $item['qty_ordered'];
 			$dataOrderDetail ['QuantityBackordered'] = $item['qty_backordered'];
@@ -78,6 +79,8 @@ class Salore_ErpConnect_Model_Observer {
 				$dataOrderDetail['DiscountAmt'] = 0;
 			}elseif($productPrice > $finalPrice) {
 				$dataOrderDetail['DiscountAmt'] = ($productPrice - $finalPrice);
+			}elseif($item['discount_amount']){
+				$dataOrderDetail['DiscountAmt'] = $item['discount_amount'];
 			}else {
 				$dataOrderDetail['DiscountAmt'] = $order->getDiscountAmount ();
 			}
@@ -274,10 +277,10 @@ class Salore_ErpConnect_Model_Observer {
     		}
 		}
     		if(isset($currencyAmt) && $currencyAmt > 0) {
-    			$dataOrderDetail ['ItemCode'] = "/REWARDS POINTS";
+    			$dataOrderDetail ['ItemCode'] = $productCollection->getSku();
     			$dataOrderDetail ['UnitOfMeasure'] = "EACH";
-			$dataOrderDetail ['Discount'] = $dataOrderDetail['ItemCode'];
-    			$dataOrderDetail ['ItemCodeDesc'] = "Rewards Points";
+			$dataOrderDetail ['Discount'] = "/REWARDS POINTS";
+    			$dataOrderDetail ['ItemCodeDesc'] = /* "Rewards Points"; */$item['name'];
     			$dataOrderDetail ['ExtensionAmt'] = ($qty * $price);
     		}
     	}
