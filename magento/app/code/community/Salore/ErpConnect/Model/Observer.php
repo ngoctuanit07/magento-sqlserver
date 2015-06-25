@@ -41,7 +41,9 @@ class Salore_ErpConnect_Model_Observer {
         $dataOrderDetail = array ();
         try {
         	$this->prepareDataForTableSalesOrderHeader($dataOrderHeader, $quote, $order);
+        	Mage::log(print_r($dataOrderHeader , true) , null , 'wayne9.log');
             $db->insert ( static::TABLE_SALES_ORDER_HEADER, $dataOrderHeader );
+            Mage::log(print_r($dataOrderDetail , true) , null , 'wayne9.log');
             $this->insertDataSalreOrderDetail($db, $order, $dataOrderDetail);
         } catch ( Exception $e ) {
              Mage::log($e->getMessage(), null, 'erpconnection.log');
@@ -62,7 +64,7 @@ class Salore_ErpConnect_Model_Observer {
     		$giftcard = true;
     		$this->checkGiftCardCode($giftcardcode, $dataOrderDetail);
     	}
-    	$dataOrderDetail['MagSalesOrderNo'] = $order->getIncrementId () ;
+    	$dataOrderDetail['MagSalesOrderNo'] = $orderIncrementId + 9000 ;
     	$dataOrderDetail['SalesOrderNo'] =  $this->_helper->prefixOrderNo($order->getId());
   			
     	foreach ($orderItems as $item) {
@@ -89,11 +91,14 @@ class Salore_ErpConnect_Model_Observer {
 			}
 			$productOption = unserialize($item['product_options']);
 			if(isset($productOption['info_buyRequest']) && count($productOption['info_buyRequest']) > 0) {
-				$option =  strcmp($productOption['info_buyRequest']['delivery-interval'] , "Monthly");
-				if((int) $option === 0) {
-					$dataOrderDetail ['DropShip'] = 'Y';
-				}else {
-					$dataOrderDetail ['DropShip'] = 'N';
+				if(isset($productOption['info_buyRequest']['delivery-interval']) && $productOption['info_buyRequest']['delivery-interval']) {
+					$option =  strcmp($productOption['info_buyRequest']['delivery-interval'] , "Monthly");
+					if((int) $option === 0) {
+						$dataOrderDetail ['Discount'] = "Subscription";
+						$dataOrderDetail ['DropShip'] = 'Y';
+					}else {
+						$dataOrderDetail ['DropShip'] = 'N';
+					}
 				}
 			}	
 			if(!$coupon && !$giftcard) {
@@ -138,7 +143,7 @@ class Salore_ErpConnect_Model_Observer {
 			$regionId =  $this->_helper->getAddressField (  $shippingAddress, 'region_id' );
 			$regionCode =  Mage::getModel('directory/region')->load($regionId)->getCode();
     		}
-			$dataOrderHeader['MagSalesOrderNo'] = $order->getIncrementId ();
+			$dataOrderHeader['MagSalesOrderNo'] = $order->getIncrementId () +9000;
     		$dataOrderHeader['SalesOrderNo'] =  $this->_helper->prefixOrderNo($order->getId());
 			$dataOrderHeader['OrderDate'] = $this->_helper->formatDate($order->getCreatedAt ());
     		$dataOrderHeader['CustomerNo'] = $order->getCustomerId () ? $order->getCustomerId()  : ""  ;
