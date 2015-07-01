@@ -42,7 +42,16 @@
                         <method>changeStatusOrderInAdmin</method>
                     </sberpconnect>
                 </observers>
-			</sales_order_save_after>   
+			</sales_order_save_after> 
+			<sales_order_invoice_save_after>
+				<observers>
+                    <sberpconnect>
+                        <type>singleton</type>
+                        <class>sberpconnect/observer</class>
+                        <method>getInvoiceDateFromAdmin</method>
+                    </sberpconnect>
+                </observers>
+			</sales_order_invoice_save_after>  
         </events>
         <models>
 			<sberpconnect>
