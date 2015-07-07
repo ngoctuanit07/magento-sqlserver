@@ -75,4 +75,15 @@ class Salore_ErpConnect_Helper_Data extends Mage_Core_Helper_Abstract {
 		$date = date('m/d/Y', $timestamp);
 		return $date;
 	}
+	
+	 public function checkLenghtShippingMethod($shippingMethod) {
+    	$lengthShippingMethod = strlen($shippingMethod);
+    	$shipvia = null;
+    	if($lengthShippingMethod <= 15) {
+    		$shipvia = $shippingMethod;
+    	} else {
+    		return;
+    	}
+    	return $shipvia;
+    }
 }
