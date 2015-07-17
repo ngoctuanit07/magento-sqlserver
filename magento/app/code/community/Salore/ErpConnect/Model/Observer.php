@@ -330,7 +330,7 @@ class Salore_ErpConnect_Model_Observer {
 			switch ($orderStatus) {
 				case $orderStatus === "processing":
 					$orderHeaderData['OrderStatus'] = "NEW";
-					$db->update (static::TAB_SALES_ORDER_HEADER , $orderHeaderData , $where);
+					$db->update (static::TABLE_SALES_ORDER_HEADER , $orderHeaderData , $where);
 					break;
 				case $orderStatus === "Shipped":
 					$orderHeaderData['OrderStatus'] = "OPEN";
