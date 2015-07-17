@@ -58,37 +58,34 @@ class Salore_ErpConnect_Model_Observer {
 	public function prepareOrderDetailData( $order ) {
 		$items = array();
 		$orderItems = $order->getAllItems();
-		$currencyAmt = $order->getRewardCurrencyAmount();
+		//calculate REWARDS POINTS summary
+		$rewardPointAmt = $order->getRewardCurrencyAmount();
 		$rewardPointSummary  = 0;
 		$subscriptionSummary = 0;
 		$couponSummary		 = 0;
 		$incrementNumber = 0; 
 		$totalSubPrice = 0;
 		$couponcode = $order->getData('coupon_code');
-		
+		if( $rewardPointAmt > 0 ) {
+			$rewardPointSummary = $rewardPointAmt;
+		}
 		foreach ($orderItems as $orderItem) {
 			$items[] = $this->prepareOrderDetailItem($order, $orderItem );
 			$productId = $orderItem->getProductId();
 			$productObject = Mage::getModel('catalog/product')->load($productId);
 			$qty = $orderItem->getQtyOrdered();
-			
-			//calculate REWARDS POINTS summary
-			if( $currencyAmt > 0 ) {
-					$rewardPointSummary += $currencyAmt;
-			} 
-			
 			if( 'Y' == $this->prepareDropShip( $orderItem ) ) {
 				if(isset($couponcode) && $couponcode) {
 					$productPrice = $productObject->getPrice();
 					$platformProduct = Mage::helper('autoship/platform')->getPlatformProduct($productObject);
 					$subPrice = Mage::helper('autoship/subscription')->getSubscriptionPrice($platformProduct , $productObject , $qty , false);
-					$totalSubPrice += round(($productPrice - $subPrice) ,0);
+					$totalSubPrice += ($productPrice - $subPrice);
 					$couponSummary +=( ($orderItem->getDiscountAmount() ) - $totalSubPrice);
 				} else {
 					$productPrice = $productObject->getPrice();
 					$platformProduct = Mage::helper('autoship/platform')->getPlatformProduct($productObject);
 					$subPrice = Mage::helper('autoship/subscription')->getSubscriptionPrice($platformProduct , $productObject , $qty , false);
-					$totalSubPrice += round(($productPrice - $subPrice) ,0);
+					$totalSubPrice += ($productPrice - $subPrice);
 				}
 			} else {
 				$couponSummary += $orderItem->getDiscountAmount(); 
