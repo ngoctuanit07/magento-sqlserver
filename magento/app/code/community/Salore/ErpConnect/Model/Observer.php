@@ -17,7 +17,7 @@ class Salore_ErpConnect_Model_Observer {
 	
 	protected $_helper = null;
 	protected $_incrementNumber = 0;
-	
+	protected $_testMode = false; 
 	public function __construct() {
 		$this->_helper = Mage::helper('sberpconnect');
 	}
@@ -115,8 +115,8 @@ class Salore_ErpConnect_Model_Observer {
 	public function prepareOrderDetailItem( $order, $orderItem ){
 		$data = array();
 		//Basic fields
-		$data['MagSalesOrderNo'] 	 = $order->getIncrementId() ;
-		$data['SalesOrderNo'] 		 =  $this->_helper->prefixOrderNo($order->getId());
+		$data['MagSalesOrderNo'] 	 = $this->getMageSaleOrderNo($order);
+		$data['SalesOrderNo'] 		 = $this->_helper->prefixOrderNo($order->getId());
 		$data['MagLineNo'] 			 = $orderItem->getItemId();
 		$data['QuantityOrdered']	 = $orderItem->getQtyOrdered();
 		$data['QuantityBackordered'] = $orderItem->getQtyBackordered();
@@ -166,8 +166,8 @@ class Salore_ErpConnect_Model_Observer {
 		$data = array();
 		//Discount-will be inserted as separated row
 		if(isset($discountInfo[0]) && isset($discountInfo[1])) {
-			$data['MagSalesOrderNo'] 	 = $order->getIncrementId()   ;
-			$data['SalesOrderNo'] 		 =  $this->_helper->prefixOrderNo($order->getId());
+			$data['MagSalesOrderNo'] 	 = $this->getMageSaleOrderNo($order);
+			$data['SalesOrderNo'] 		 = $this->_helper->prefixOrderNo($order->getId());
 			$data['MagLineNo'] 			 = $incrementNumber;
 			$data['QuantityOrdered'] 	 = '';
 			$data['QuantityBackordered'] = '';
@@ -209,8 +209,8 @@ class Salore_ErpConnect_Model_Observer {
 		
 		$data = array();
 		
-		$data['MagSalesOrderNo'] 	= $order->getIncrementId()  ;
-		$data['SalesOrderNo'] 		=  $this->_helper->prefixOrderNo($order->getId());
+		$data['MagSalesOrderNo'] 	= $this->getMageSaleOrderNo($order);
+		$data['SalesOrderNo'] 		= $this->_helper->prefixOrderNo($order->getId());
 		$data['OrderDate'] 			= $this->_helper->formatDate($order->getCreatedAt ());
 		$data['CustomerNo'] 		= $order->getCustomerId() ? $order->getCustomerId() : '';
 		$data['BillToName'] 		= $this->getBillingAddressField($order, 'firstname') . ' ' . $this->getBillingAddressField($order, 'lastname');
@@ -388,6 +388,11 @@ class Salore_ErpConnect_Model_Observer {
 		//	Mage::helper('sberpconnect/customer')->import();
 	}
 	
-	
+	protected function getMageSaleOrderNo( $order ) {
+		if($this->_testMode === true) {
+			return $order->getIncrementId() + 13000 ;
+		}
+		return $order->getIncrementId();
+	}
 	
 }
