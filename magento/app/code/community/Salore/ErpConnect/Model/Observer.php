@@ -17,7 +17,10 @@ class Salore_ErpConnect_Model_Observer {
 	
 	protected $_helper = null;
 	protected $_incrementNumber = 0;
-	protected $_testMode = false; 
+	protected $_testMode = false;
+	protected $_debug = false;
+	protected $_debugFile = 'salore_erpconnect_debug.log';
+	
 	public function __construct() {
 		$this->_helper = Mage::helper('sberpconnect');
 	}
@@ -43,9 +46,8 @@ class Salore_ErpConnect_Model_Observer {
 	}
 	
 	public function salesPlaceOrderAfter( $observer ) {
-		
-		
-		$order = $observer->getEvent()->getOrder();
+
+	    $order = $observer->getEvent()->getOrder();
 		
 		//Prepare Data for table OrderHeader 
 		$orderHeaderData = $this->prepareOrderHeaderData( $order );
@@ -55,7 +57,7 @@ class Salore_ErpConnect_Model_Observer {
 		$this->saveOrderToMssql( $orderHeaderData, $orderDetailData );
 	}
 	
-	public function prepareOrderDetailData( $order ) {
+	public function prepareOrderDetailDataOld( $order ) {
 		$items = array();
 		$orderItems = $order->getAllItems();
 		//calculate REWARDS POINTS summary
@@ -107,6 +109,138 @@ class Salore_ErpConnect_Model_Observer {
 			$this->_incrementNumber = ($incrementNumber + 1);
 		}
 		return $items;
+	}
+	
+	public function prepareOrderDetailData( $order ) {
+	    
+	    if ($this->_debug) {
+	        Mage::log('---OrderID:'.$order->getIncrementId().'---------', null, $this->_debugFile);
+	    }
+	    
+	    $items = array();
+	    $orderItems = $order->getAllItems();
+	    //calculate REWARDS POINTS summary
+	    $rewardPointAmt = $order->getRewardCurrencyAmount();
+	    $rewardPointSummary  = 0;
+	    $subscriptionSummary = 0;
+	    $couponSummary           = 0;
+	    $incrementNumber = 0;
+	    $couponCode = $order->getData('coupon_code');
+	    if( $rewardPointAmt > 0 ) {
+	        $rewardPointSummary = $rewardPointAmt;
+	    }
+	    foreach ($orderItems as $orderItem) {
+	        $items[] = $this->prepareOrderDetailItem($order, $orderItem );
+	        $productId = $orderItem->getProductId();
+	        $productObject = Mage::getModel('catalog/product')->load($productId);
+	        $qty = $orderItem->getQtyOrdered();
+	        
+	        //Subscription
+	        $subscriptionAmount = 0;
+	        if ( $this->isProductSubscribed( $orderItem ) ) {
+	            $subscriptionAmount = $this->getSubscriptionAmount($productObject, $qty);
+	            if ( $subscriptionAmount > 0 ) {
+	                $subscriptionSummary += $subscriptionAmount;
+	            }
+	        }
+	        
+	        //Coupon
+	        $couponAmount = $this->getCouponAmount($couponCode, $subscriptionAmount, $orderItem);
+	        if ( $couponAmount > 0 ) {
+	            $couponSummary += $couponAmount;
+	        }
+	
+	        $incrementNumber = $orderItem->getItemId();
+	    }
+	
+	    //prepare discount items
+	    $discounts = $this->getDiscountCases($order, $rewardPointSummary, $subscriptionSummary, $couponSummary );
+	    $index = 0;
+	    foreach ($discounts as $discountInfo){
+	        $incrementNumber++;
+	        $items[] = $this->prepareOrderDetailDiscountItem($order, $incrementNumber, $discountInfo);
+	        $index++;
+	    }
+	    if( $index > 0 ) {
+	        $this->_incrementNumber = ($incrementNumber + 1);
+	    }
+	    return $items;
+	}
+	protected function isProductSubscribed( $orderItem ) {
+	    $productOptions = $orderItem->getProductOptions();
+	    if ($this->_debug) {
+	        $optionsString = print_r($productOptions, true);
+	        Mage::log($optionsString, null, $this->_debugFile);
+	    }
+	    if ( isset($productOptions['info_buyRequest']['product']) && isset($productOptions['info_buyRequest']['delivery-option']) ) {
+	        $productId = $productOptions['info_buyRequest']['product'];
+	        $deliveryOption = $productOptions['info_buyRequest']['delivery-option'];
+	        $deliveryOption = trim($deliveryOption);
+	        $deliveryOption = strtolower($deliveryOption);
+	        if ( (int)$productId == (int)$orderItem->getProductId() && 'subscribe' == $deliveryOption ) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+	/**
+	 * Get Subscription Amount of order item
+	 * @param unknown $product
+	 * @param unknown $qty
+	 * @return number
+	 */
+	protected function getSubscriptionAmount( $product, $qty ) {
+	    $subscriptionAmount = 0;
+	    
+	    $autoshipQty = 1;
+	    
+	    $oneTimePurchasePrice = Mage::helper('autoship/subscription')->getOneTimePurchasePrice($product , $autoshipQty);
+	    
+	    $platformProduct = Mage::helper('autoship/platform')->getPlatformProduct( $product );
+	    $subscriptionPrice = Mage::helper('autoship/subscription')->getSubscriptionPrice($platformProduct , $product , $autoshipQty);
+	    
+	    $subscriptionAmount = (($oneTimePurchasePrice - $subscriptionPrice) * $qty);
+	    
+	    if ( $subscriptionAmount <= 0 ) {
+	        $subscriptionAmount = 0;
+	    }
+	    
+	    if ($this->_debug) {
+	        $logMessage = 'SUBSCRIPTION:'.$product->getId().':'.$product->getName().':qty:'.$qty.':'.$subscriptionAmount;
+	        Mage::log($logMessage, null, $this->_debugFile);
+	    }
+	    
+	    return $subscriptionAmount;
+	}
+	/**
+	 * Get CouponAmount of orderitem
+	 * @param unknown $couponCode
+	 * @param unknown $subscriptionAmount
+	 * @param unknown $orderItem
+	 * @return number
+	 */
+	protected function getCouponAmount($couponCode, $subscriptionAmount, $orderItem) {
+	    $couponAmount = 0;
+	    if( isset($couponCode) && !empty($couponCode) && $subscriptionAmount > 0 ) {
+	        $couponAmount = ( $orderItem->getDiscountAmount() - $subscriptionAmount );
+	    } else {
+	        $couponAmount += $orderItem->getDiscountAmount();
+	    }
+	    
+	    if ( $couponAmount <= 0 ) {
+	        $couponAmount = 0;
+	    }
+	    
+	    if ($this->_debug) {
+	        $product = Mage::getModel('catalog/product')
+	               ->setStoreId(Mage::app()->getStore()->getId())
+	               ->load($orderItem->getProductId());
+	        
+	        $logMessage = 'COUPON:'.$product->getId().':'.$product->getName().':'.$couponAmount;
+	        Mage::log($logMessage, null, $this->_debugFile);
+	    }
+	    
+	    return $couponAmount;
 	}
 	
 	public function prepareOrderDetailItem( $order, $orderItem ){
@@ -186,7 +320,7 @@ class Salore_ErpConnect_Model_Observer {
     	$tableName = $resource->getTableName('sales/order_item');
     	$writeConnection->query('ALTER TABLE '.$tableName.' AUTO_INCREMENT = '.$number);
     }
-	public function prepareDropShip( $orderItem ){
+	public function prepareDropShipOld( $orderItem ){
 		$dropShip = 'N';
 		$productOption = unserialize($orderItem->getData('product_options'));
 		
@@ -201,6 +335,13 @@ class Salore_ErpConnect_Model_Observer {
 			
 		}
 		return $dropShip;
+	}
+	public function prepareDropShip( $orderItem ) {
+	    $dropShip = 'N';
+	    if ( $this->isProductSubscribed($orderItem) ) {
+	        $dropShip = 'Y';
+	    }
+	    return $dropShip;
 	}
 	public function prepareOrderHeaderData( $order ) {
 		
@@ -322,7 +463,7 @@ class Salore_ErpConnect_Model_Observer {
 		$db = $this->getMssqlConnection();
 		$orderHeaderData = array ();
 		$orderDetailData = array();
-		$where = "MagSalesOrderNo = " .$order->getIncrementId()  ;
+		$where = "MagSalesOrderNo = " .$order->getIncrementId();
 		try {
 			switch ($orderStatus) {
 				case $orderStatus === "processing":
@@ -382,7 +523,7 @@ class Salore_ErpConnect_Model_Observer {
 		 * Mage::log ( $date, null, 'erpconnect.log' );
 		 */
 		Mage::helper('sberpconnect/product')->import();
-		//	Mage::helper('sberpconnect/customer')->import();
+		//Mage::helper('sberpconnect/customer')->import();
 	}
 	
 	protected function getMageSaleOrderNo( $order ) {
@@ -391,5 +532,24 @@ class Salore_ErpConnect_Model_Observer {
 		}
 		return $order->getIncrementId();
 	}
-	
+	/**
+	 * This function is deprecated, just for reference only
+	 * @param unknown $observer
+	 */
+	public function salesOrderItemSaveAfter( $observer ) {
+	    $salesOrderItem = $observer->getEvent()->getDataObject();
+	    if ( 'Y' == $this->prepareDropShip($salesOrderItem) ) {
+	        //Update table MSSQL - tblSalesOrderDetail
+	        $magLineNo = $salesOrderItem->getItemId();
+	        $salesOrderNo = $this->_helper->prefixOrderNo( $salesOrderItem->getOrderId() );
+	        try {
+	            $db = $this->getMssqlConnection();
+	            $where = 'MagLineNo = ' .$magLineNo.' AND SalesOrderNo = '.$salesOrderNo;
+	            $data['DropShip'] = 'Y';
+	            $db->update (static::TABLE_SALES_ORDER_DETAIL , $data , $where);
+	        } catch (Exception $e) {
+	            $this->_helper->log( $e->getMessage() );
+	        }
+	    }
+	}
 }
