@@ -396,7 +396,7 @@ class Salore_ErpConnect_Model_Observer {
         //loop order detail items
         foreach($orderDetailData as $item) {
             if(isset($item['ItemCode']) && !empty($item['ItemCode'])) {
-                $itemTotalAmount += ($item['ExtensionAmt'] * $item['QuantityOrdered']);
+                $itemTotalAmount += ($item['ExtensionAmt']);
             } else {
                 if(isset($item['DiscountAmt']) && $item['DiscountAmt'] > 0) {
                     $itemTotalDiscount += $item['DiscountAmt'];
