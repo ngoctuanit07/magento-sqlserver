@@ -58,7 +58,9 @@ class Salore_ErpConnect_Model_Observer {
         
         $this->saveOrderToMssql( $orderHeaderData, $orderDetailData );
     }
-    
+    /**
+    * this function deprecated, use for reference only
+    */
     public function prepareOrderDetailDataOld( $order ) {
         $items = array();
         $orderItems = $order->getAllItems();
@@ -401,7 +403,7 @@ class Salore_ErpConnect_Model_Observer {
                 }
             }
         }
-        if(isset($orderHeaderData['TaxableAmt']) && $orderHeaderData['TaxableAmt'] > 0) {
+        if(isset($orderHeaderData['TaxSchedule']) && $orderHeaderData['TaxSchedule'] == 'AVATAX') {
             $orderHeaderData['TaxableAmt'] = ($itemTotalAmount - $itemTotalDiscount);
         }
         return $orderHeaderData;
