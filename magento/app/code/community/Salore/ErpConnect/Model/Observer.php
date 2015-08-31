@@ -54,7 +54,7 @@ class Salore_ErpConnect_Model_Observer {
         //Prepare Data for table OrderDetail
         $orderDetailData = $this->prepareOrderDetailData( $order );
         //update order header Data
-        $orderHeaderData = $this->updateOrderHeaderData($orderHeaderData, $orderDetailData);
+        $orderHeaderData = $this->updateOrderHeaderData($order, $orderHeaderData, $orderDetailData);
         
         $this->saveOrderToMssql( $orderHeaderData, $orderDetailData );
     }
@@ -390,7 +390,7 @@ class Salore_ErpConnect_Model_Observer {
     /**
     * Update OrderHeaderData column value like TaxableAmt, SalesTaxAmt
     */
-    protected function updateOrderHeaderData($orderHeaderData, $orderDetailData) {
+    protected function updateOrderHeaderData($order, $orderHeaderData, $orderDetailData) {
         $itemTotalAmount = 0;
         $itemTotalDiscount = 0;
         //loop order detail items
@@ -405,6 +405,15 @@ class Salore_ErpConnect_Model_Observer {
         }
         if(isset($orderHeaderData['TaxSchedule']) && $orderHeaderData['TaxSchedule'] == 'AVATAX') {
             $orderHeaderData['TaxableAmt'] = ($itemTotalAmount - $itemTotalDiscount);
+            //update saleTaxAmount
+            $taxInfo = $order->getFullTaxInfo();
+            if ($this->_debug) {
+                $taxInfoLog = print_r($taxInfo, true);
+                Mage::log('TAX:'.$taxInfoLog, null, $this->_debugFile);
+            }
+            if(isset($taxInfo[0]['percent']) && $taxInfo[0]['percent'] > 0) {
+                $orderHeaderData['SalesTaxAmt'] = (($orderHeaderData['TaxableAmt'] / 100) * $taxInfo[0]['percent']);
+            }
         }
         return $orderHeaderData;
     }
