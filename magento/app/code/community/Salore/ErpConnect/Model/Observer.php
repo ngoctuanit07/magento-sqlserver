@@ -17,8 +17,8 @@ class Salore_ErpConnect_Model_Observer {
     
     protected $_helper = null;
     protected $_incrementNumber = 0;
-    protected $_testMode = false;
-    protected $_debug = false;
+    protected $_testMode = true;
+    protected $_debug = true;
     protected $_debugFile = 'salore_erpconnect_debug.log';
     
     public function __construct() {
@@ -313,7 +313,7 @@ class Salore_ErpConnect_Model_Observer {
             $data['ExtensionAmt']         = '';
             $data['DropShip']         = '';
             $data ['Discount']              = $discountInfo[0];
-            $data['DiscountAmt']          = $discountInfo[1];
+            $data['DiscountAmt']          = $this->roundPrice($discountInfo[1]);
             
         }
         return $data;
@@ -562,7 +562,7 @@ class Salore_ErpConnect_Model_Observer {
     
     protected function getMageSaleOrderNo( $order ) {
         if($this->_testMode === true) {
-            return $order->getIncrementId() + 13000 ;
+            return $order->getIncrementId() + 93000 ;
         }
         return $order->getIncrementId();
     }
@@ -585,5 +585,12 @@ class Salore_ErpConnect_Model_Observer {
                 $this->_helper->log( $e->getMessage() );
             }
         }
+    }
+    /**
+     * 
+     */
+    protected function roundPrice($price)
+    {
+    	return round($price, 2);
     }
 }
