@@ -1,31 +1,27 @@
 language: php
 php:
-  - 5.4
   - 5.5
   - 5.6
-  - hhvm
-  - nightly
-
-sudo: false
-
 env:
-  - MAGENTO_VERSION="1.9.0.1"
-  - MAGENTO_VERSION="1.9.1.0"
-  - MAGENTO_VERSION="1.9.1.1"
-  - MAGENTO_VERSION="1.9.2.0"
-  - MAGENTO_VERSION="1.9.2.1"
-  - MAGENTO_VERSION="1.9.2.2"
-
-before_script:
-  - mkdir magento/
-  - git clone git://github.com/EcomDev/MageCI.git ./mageci/
-  - ./mageci/bin/mage-ci install magento $MAGENTO_VERSION magento_test -c -t -r http://mage-ci.ecomdev.org
-  - composer update
-  - git clone git://github.com/EcomDev/EcomDev_PHPUnit.git -b dev ./phpunit/
-  - CURR_DIR=$(pwd)
-  - wget https://raw.githubusercontent.com/colinmollenhour/modman/master/modman -O ./mageci/bin/modman
-  - chmod +x ./mageci/bin/modman
-  - ./mageci/bin/mage-ci install-module magento $CURR_DIR/phpunit
-  - ./mageci/bin/mage-ci install-module magento $CURR_DIR
-  - composer install --dev
+  - MAGENTO_VERSION=magento-ce-1.9.1.0
+  - MAGENTO_VERSION=magento-ce-1.9.1.1
+  - MAGENTO_VERSION=magento-ce-1.9.2.1
+  - MAGENTO_VERSION=magento-ce-1.9.2.2
+	
+before_install:
+- php /home/travis/.phpenv/versions/5.6/bin/composer self-update
+- mysql -e "create database IF NOT EXISTS test;" -uroot
+install:
+  - composer install
+  curl https://gordonlesti.com/"$MAGE".tar.gz | tar xz
+  - mv $MAGE magento 
+  - rm -rf var/cache/*
   - cd magento
+  - wget https://raw.githubusercontent.com/colinmollenhour/modman/master/modman
+  - chmod +x modman
+  - ./modman init
+before_script:
+  - ./modman clone https://github.com/ngoctuanit07/magento-sqlserver.git
+script: php vendor/bin/phpunit
+services:
+  - mysql
